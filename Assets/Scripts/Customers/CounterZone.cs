@@ -12,6 +12,7 @@ namespace ShopIdle.Customers
         [Header("References")]
         [SerializeField] private CustomerQueue _queue;
         [SerializeField] private CustomerSpawner _spawner;
+        [SerializeField] private Money.MoneySpot _moneySpot;
 
         private Player.PlayerStack _playerInRange;
         private float _serveTimer;
@@ -49,7 +50,6 @@ namespace ShopIdle.Customers
 
             customer.ReceivePizza();
             _currentOrderTotal += _moneyPerPizza;
-            Debug.Log($"[Money] Served pizza! +${_moneyPerPizza}");
 
             // Check if order complete
             if (customer.IsFullyServed)
@@ -60,7 +60,10 @@ namespace ShopIdle.Customers
 
         private void CompleteOrder(Customer customer)
         {
-            Debug.Log($"[Money] Order complete! Earned ${_currentOrderTotal} total.");
+            // Spawn money on the counter
+            if (_moneySpot != null && _currentOrderTotal > 0)
+                _moneySpot.SpawnBills(_currentOrderTotal);
+
             _currentOrderTotal = 0;
 
             // Remove from queue

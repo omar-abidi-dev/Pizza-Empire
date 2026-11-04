@@ -30,28 +30,27 @@ namespace ShopIdle.Core
             // --- Counter (visual) ---
             GameObject counter = GameObject.CreatePrimitive(PrimitiveType.Cube);
             counter.name = "Counter";
-            counter.transform.position = new Vector3(0f, 0.5f, 2f);
+            counter.transform.position = new Vector3(0f, 0.5f, 7f);
             counter.transform.localScale = new Vector3(3f, 1f, 0.8f);
             var counterMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             counterMat.color = new Color(0.55f, 0.35f, 0.15f); // brown
             counter.GetComponent<MeshRenderer>().material = counterMat;
-            // Counter is just visual, no collider trigger needed on it directly
 
-            // --- Cashier Zone (trigger behind counter, where player stands) ---
+            // --- Cashier Zone (trigger behind counter, top side where player stands) ---
             GameObject cashierZone = new GameObject("CashierZone");
-            cashierZone.transform.position = new Vector3(0f, 0.5f, 0.8f);
+            cashierZone.transform.position = new Vector3(0f, 0.5f, 8f);
             var cashierCollider = cashierZone.AddComponent<BoxCollider>();
             cashierCollider.isTrigger = true;
-            cashierCollider.size = new Vector3(2f, 2f, 1.5f);
+            cashierCollider.size = new Vector3(2.5f, 2f, 2f);
 
             // --- Queue system ---
             GameObject queueObj = new GameObject("CustomerQueue");
             queueObj.transform.position = Vector3.zero;
             var queue = queueObj.AddComponent<CustomerQueue>();
 
-            // Queue start point (in front of counter, customer side)
+            // Queue start point (in front of counter, bottom side)
             GameObject queueStart = new GameObject("QueueStart");
-            queueStart.transform.position = new Vector3(0f, 0f, 3.5f);
+            queueStart.transform.position = new Vector3(0f, 0f, 5f);
             queueStart.transform.SetParent(queueObj.transform);
 
             // Set queue start via serialized field
@@ -59,10 +58,10 @@ namespace ShopIdle.Core
 
             // --- Spawn and Exit points ---
             GameObject spawnPoint = new GameObject("SpawnPoint");
-            spawnPoint.transform.position = new Vector3(0f, 0f, 12f);
+            spawnPoint.transform.position = new Vector3(-7f, 0f, -9f);
 
             GameObject exitPoint = new GameObject("ExitPoint");
-            exitPoint.transform.position = new Vector3(5f, 0f, 12f);
+            exitPoint.transform.position = new Vector3(7f, 0f, -9f);
 
             // --- Customer Spawner ---
             GameObject spawnerObj = new GameObject("CustomerSpawner");
@@ -76,6 +75,10 @@ namespace ShopIdle.Core
             var counterZone = cashierZone.AddComponent<CounterZone>();
             SetPrivateField(counterZone, "_queue", queue);
             SetPrivateField(counterZone, "_spawner", spawner);
+
+            // --- Step4 Setup (layout + money) ---
+            var step4Obj = new GameObject("Step4Setup");
+            step4Obj.AddComponent<Step4Setup>();
         }
 
         private GameObject CreateCustomerPrefab()
