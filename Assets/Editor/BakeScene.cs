@@ -10,6 +10,9 @@ using TMPro;
 /// </summary>
 public static class BakeScene
 {
+    private const string MarkerMatPath = "Assets/Materials/Markers";
+    private const string CustomerPrefabPath = "Assets/Prefabs/Customers/CustomerPrefab.prefab";
+
     [MenuItem("ShopIdle/Bake Scene")]
     public static void Bake()
     {
@@ -18,6 +21,8 @@ public static class BakeScene
             Debug.LogError("Stop Play Mode before baking.");
             return;
         }
+
+        EnsureFolder(MarkerMatPath);
 
         RemoveSetupObjects();
         CreateCustomerPrefab();
@@ -39,15 +44,91 @@ public static class BakeScene
 
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         EditorSceneManager.SaveOpenScenes();
+        AssetDatabase.SaveAssets();
 
         Debug.Log("[BakeScene] Scene baked and saved successfully.");
     }
+
+    [MenuItem("ShopIdle/Reset Progress")]
+    public static void ResetProgress()
+    {
+        PlayerPrefs.DeleteAll();
+        PlayerPrefs.Save();
+        Debug.Log("[BakeScene] PlayerPrefs cleared. Restart Play Mode to test from $0.");
+    }
+
+    // ────────────────────────────────────────────
+    // Helpers
+    // ────────────────────────────────────────────
+
+    /// <summary>Find a root GameObject by name, including inactive objects.</summary>
+    private static GameObject FindInScene(string name)
+    {
+        var scene = EditorSceneManager.GetActiveScene();
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            if (root.name == name) return root;
+        }
+        return null;
+    }
+
+    private static void DestroyIfExists(string name)
+    {
+        var obj = FindInScene(name);
+        if (obj != null)
+        {
+            Undo.DestroyObjectImmediate(obj);
+            Debug.Log($"[BakeScene] Removed {name}");
+        }
+    }
+
+    private static void EnsureFolder(string path)
+    {
+        if (AssetDatabase.IsValidFolder(path)) return;
+        var parts = path.Split('/');
+        var current = parts[0]; // "Assets"
+        for (int i = 1; i < parts.Length; i++)
+        {
+            var next = current + "/" + parts[i];
+            if (!AssetDatabase.IsValidFolder(next))
+                AssetDatabase.CreateFolder(current, parts[i]);
+            current = next;
+        }
+    }
+
+    /// <summary>Get or create a saved transparent unlit material asset.</summary>
+    private static Material GetOrCreateTransparentMat(string name, Color color)
+    {
+        string path = $"{MarkerMatPath}/{name}.mat";
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (mat != null)
+        {
+            mat.color = color;
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+        mat.color = color;
+        mat.SetFloat("_Surface", 1f);
+        mat.SetOverrideTag("RenderType", "Transparent");
+        mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        mat.SetFloat("_ZWrite", 0f);
+        mat.renderQueue = 3000;
+        mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        AssetDatabase.CreateAsset(mat, path);
+        return mat;
+    }
+
+    // ────────────────────────────────────────────
+    // Cleanup
+    // ────────────────────────────────────────────
 
     private static void RemoveSetupObjects()
     {
         DestroyIfExists("Step3Setup");
         DestroyIfExists("Step4Setup");
-        // Also remove old markers that may have been created by setup scripts
         DestroyIfExists("CashierMarker");
         DestroyIfExists("OvenMarker");
         DestroyIfExists("MoneySpotMarker");
@@ -56,27 +137,27 @@ public static class BakeScene
         DestroyIfExists("MoneySpotMarkerOutline");
     }
 
-    private static void DestroyIfExists(string name)
-    {
-        var obj = GameObject.Find(name);
-        if (obj != null)
-        {
-            Undo.DestroyObjectImmediate(obj);
-            Debug.Log($"[BakeScene] Removed {name}");
-        }
-    }
-
     // ────────────────────────────────────────────
-    // Customer Prefab (hidden in scene, acts as template)
+    // Customer Prefab — saved as a real prefab asset
     // ────────────────────────────────────────────
     private static void CreateCustomerPrefab()
     {
-        if (GameObject.Find("CustomerPrefab") != null) return;
+        // Remove any leftover scene-based prefab from older bakes
+        var oldScene = FindInScene("CustomerPrefab");
+        if (oldScene != null)
+        {
+            Object.DestroyImmediate(oldScene);
+            Debug.Log("[BakeScene] Removed old in-scene CustomerPrefab");
+        }
 
+        // If the prefab asset already exists, nothing to do
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(CustomerPrefabPath) != null) return;
+
+        EnsureFolder("Assets/Prefabs/Customers");
+
+        // Build hierarchy as a temp scene object
         var customer = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         customer.name = "CustomerPrefab";
-        customer.transform.position = new Vector3(100f, -100f, 100f);
-        Undo.RegisterCreatedObjectUndo(customer, "Create CustomerPrefab");
 
         customer.AddComponent<ShopIdle.Customers.Customer>();
 
@@ -117,11 +198,17 @@ public static class BakeScene
         tmp.color = Color.black;
         tmp.rectTransform.sizeDelta = new Vector2(1f, 0.8f);
 
+        // Wire Customer references before saving
         var customerComp = customer.GetComponent<ShopIdle.Customers.Customer>();
         SetField(customerComp, "_speechBubble", speechBubble);
         SetField(customerComp, "_orderText", tmp);
 
-        customer.SetActive(false);
+        // Save as a real prefab asset
+        PrefabUtility.SaveAsPrefabAsset(customer, CustomerPrefabPath);
+        Debug.Log($"[BakeScene] Created prefab asset at {CustomerPrefabPath}");
+
+        // Destroy the temp scene object — the prefab asset is what we need
+        Object.DestroyImmediate(customer);
     }
 
     // ────────────────────────────────────────────
@@ -129,7 +216,7 @@ public static class BakeScene
     // ────────────────────────────────────────────
     private static void CreateCounter()
     {
-        if (GameObject.Find("Counter") != null) return;
+        if (FindInScene("Counter") != null) return;
 
         var counter = GameObject.CreatePrimitive(PrimitiveType.Cube);
         counter.name = "Counter";
@@ -147,7 +234,7 @@ public static class BakeScene
     // ────────────────────────────────────────────
     private static void CreateCashierZone()
     {
-        if (GameObject.Find("CashierZone") != null) return;
+        if (FindInScene("CashierZone") != null) return;
 
         var cashierZone = new GameObject("CashierZone");
         cashierZone.transform.position = new Vector3(0f, 0.5f, 8f);
@@ -165,7 +252,7 @@ public static class BakeScene
     // ────────────────────────────────────────────
     private static void CreateCustomerQueue()
     {
-        if (GameObject.Find("CustomerQueue") != null) return;
+        if (FindInScene("CustomerQueue") != null) return;
 
         var queueObj = new GameObject("CustomerQueue");
         queueObj.transform.position = Vector3.zero;
@@ -185,14 +272,14 @@ public static class BakeScene
     // ────────────────────────────────────────────
     private static void CreateSpawnAndExitPoints()
     {
-        if (GameObject.Find("SpawnPoint") == null)
+        if (FindInScene("SpawnPoint") == null)
         {
             var sp = new GameObject("SpawnPoint");
             sp.transform.position = new Vector3(-7f, 0f, -9f);
             Undo.RegisterCreatedObjectUndo(sp, "Create SpawnPoint");
         }
 
-        if (GameObject.Find("ExitPoint") == null)
+        if (FindInScene("ExitPoint") == null)
         {
             var ep = new GameObject("ExitPoint");
             ep.transform.position = new Vector3(7f, 0f, -9f);
@@ -205,7 +292,7 @@ public static class BakeScene
     // ────────────────────────────────────────────
     private static void CreateCustomerSpawner()
     {
-        if (GameObject.Find("CustomerSpawner") != null) return;
+        if (FindInScene("CustomerSpawner") != null) return;
 
         var obj = new GameObject("CustomerSpawner");
         Undo.RegisterCreatedObjectUndo(obj, "Create CustomerSpawner");
@@ -217,7 +304,7 @@ public static class BakeScene
     // ────────────────────────────────────────────
     private static void CreateMoneyManager()
     {
-        if (GameObject.Find("MoneyManager") != null) return;
+        if (FindInScene("MoneyManager") != null) return;
 
         var obj = new GameObject("MoneyManager");
         Undo.RegisterCreatedObjectUndo(obj, "Create MoneyManager");
@@ -229,7 +316,7 @@ public static class BakeScene
     // ────────────────────────────────────────────
     private static void CreateMoneySpot()
     {
-        if (GameObject.Find("MoneySpot") != null) return;
+        if (FindInScene("MoneySpot") != null) return;
 
         var obj = new GameObject("MoneySpot");
         obj.transform.position = new Vector3(1f, 0.5f, 7.5f);
@@ -254,7 +341,7 @@ public static class BakeScene
     // ────────────────────────────────────────────
     private static void SetupMoneyUI()
     {
-        if (GameObject.Find("MoneyDisplay") != null) return;
+        if (FindInScene("MoneyDisplay") != null) return;
 
         var canvas = Object.FindAnyObjectByType<Canvas>();
         if (canvas == null) return;
@@ -287,7 +374,7 @@ public static class BakeScene
     // ────────────────────────────────────────────
     private static void AdjustLayout()
     {
-        var floor = GameObject.Find("Floor");
+        var floor = FindInScene("Floor");
         if (floor != null)
         {
             floor.transform.position = Vector3.zero;
@@ -297,12 +384,12 @@ public static class BakeScene
             if (renderer != null)
             {
                 var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                mat.color = new Color(0.96f, 0.91f, 0.82f); // warm cream
+                mat.color = new Color(0.96f, 0.91f, 0.82f);
                 renderer.sharedMaterial = mat;
             }
         }
 
-        var oven = GameObject.Find("Oven");
+        var oven = FindInScene("Oven");
         if (oven != null)
             oven.transform.position = new Vector3(-4f, 0.5f, 7f);
 
@@ -312,25 +399,22 @@ public static class BakeScene
     }
 
     // ────────────────────────────────────────────
-    // Floor markers: bright flat squares with soft outline
+    // Floor markers: saved .mat assets (no SetInteger errors)
     // ────────────────────────────────────────────
     private static void CreateFloorMarkers()
     {
-        // Cashier zone — bright cyan with outline
         CreateZoneMarkerWithOutline("CashierMarker",
             new Vector3(0f, 0.02f, 8f),
             new Vector3(2.5f, 0.01f, 2f),
             new Color(0f, 0.85f, 1f, 0.55f),
             new Color(0f, 0.85f, 1f, 0.2f));
 
-        // Oven zone — bright orange with outline
         CreateZoneMarkerWithOutline("OvenMarker",
             new Vector3(-4f, 0.02f, 5.8f),
             new Vector3(2.5f, 0.01f, 2f),
             new Color(1f, 0.55f, 0f, 0.55f),
             new Color(1f, 0.55f, 0f, 0.2f));
 
-        // Money spot — bright green with outline
         CreateZoneMarkerWithOutline("MoneySpotMarker",
             new Vector3(1f, 0.02f, 7f),
             new Vector3(1.2f, 0.01f, 1f),
@@ -338,52 +422,40 @@ public static class BakeScene
             new Color(0.15f, 0.9f, 0.3f, 0.2f));
     }
 
-    private static void CreateZoneMarkerWithOutline(string name, Vector3 position, Vector3 scale, Color fillColor, Color outlineColor)
+    private static void CreateZoneMarkerWithOutline(string name, Vector3 position,
+        Vector3 scale, Color fillColor, Color outlineColor)
     {
-        // Destroy old versions
-        var old = GameObject.Find(name);
+        var old = FindInScene(name);
         if (old != null) Object.DestroyImmediate(old);
-        var oldOutline = GameObject.Find(name + "Outline");
+        var oldOutline = FindInScene(name + "Outline");
         if (oldOutline != null) Object.DestroyImmediate(oldOutline);
 
-        // Soft outline (slightly larger, more transparent)
+        var fillMat = GetOrCreateTransparentMat(name + "_Fill", fillColor);
+        var outlineMat = GetOrCreateTransparentMat(name + "_Outline", outlineColor);
+
+        // Soft outline
         var outline = GameObject.CreatePrimitive(PrimitiveType.Quad);
         outline.name = name + "Outline";
-        outline.transform.position = position + Vector3.down * 0.001f; // just below fill
+        outline.transform.position = position + Vector3.down * 0.001f;
         outline.transform.localScale = scale + new Vector3(0.6f, 0f, 0.6f);
         outline.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         Object.DestroyImmediate(outline.GetComponent<MeshCollider>());
-        outline.GetComponent<MeshRenderer>().sharedMaterial = CreateTransparentUnlitMat(outlineColor);
+        outline.GetComponent<MeshRenderer>().sharedMaterial = outlineMat;
         Undo.RegisterCreatedObjectUndo(outline, $"Create {name}Outline");
 
-        // Fill quad (inner, brighter)
+        // Fill quad
         var fill = GameObject.CreatePrimitive(PrimitiveType.Quad);
         fill.name = name;
         fill.transform.position = position;
         fill.transform.localScale = scale;
         fill.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         Object.DestroyImmediate(fill.GetComponent<MeshCollider>());
-        fill.GetComponent<MeshRenderer>().sharedMaterial = CreateTransparentUnlitMat(fillColor);
+        fill.GetComponent<MeshRenderer>().sharedMaterial = fillMat;
         Undo.RegisterCreatedObjectUndo(fill, $"Create {name}");
     }
 
-    private static Material CreateTransparentUnlitMat(Color color)
-    {
-        var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-        mat.color = color;
-        mat.SetFloat("_Surface", 1f);
-        mat.SetFloat("_Blend", 0f);
-        mat.SetOverrideTag("RenderType", "Transparent");
-        mat.SetInteger("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        mat.SetInteger("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-        mat.SetInteger("_ZWrite", 0);
-        mat.renderQueue = 3000;
-        mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-        return mat;
-    }
-
     // ────────────────────────────────────────────
-    // Camera: 45° angle, portrait-friendly, fills phone screen
+    // Camera
     // ────────────────────────────────────────────
     private static void AdjustCamera()
     {
@@ -409,32 +481,21 @@ public static class BakeScene
     }
 
     // ────────────────────────────────────────────
-    // Walls: back and sides
+    // Walls
     // ────────────────────────────────────────────
     private static void AddWalls()
     {
         var wallMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        wallMat.color = new Color(0.88f, 0.83f, 0.75f); // warm beige
+        wallMat.color = new Color(0.88f, 0.83f, 0.75f);
 
-        CreateWall("WallBack",
-            new Vector3(0f, 1.5f, 10f),
-            new Vector3(16f, 3f, 0.3f),
-            wallMat);
-
-        CreateWall("WallLeft",
-            new Vector3(-8f, 1.5f, 0f),
-            new Vector3(0.3f, 3f, 20f),
-            wallMat);
-
-        CreateWall("WallRight",
-            new Vector3(8f, 1.5f, 0f),
-            new Vector3(0.3f, 3f, 20f),
-            wallMat);
+        CreateWall("WallBack", new Vector3(0f, 1.5f, 10f), new Vector3(16f, 3f, 0.3f), wallMat);
+        CreateWall("WallLeft", new Vector3(-8f, 1.5f, 0f), new Vector3(0.3f, 3f, 20f), wallMat);
+        CreateWall("WallRight", new Vector3(8f, 1.5f, 0f), new Vector3(0.3f, 3f, 20f), wallMat);
     }
 
     private static void CreateWall(string name, Vector3 position, Vector3 scale, Material mat)
     {
-        var existing = GameObject.Find(name);
+        var existing = FindInScene(name);
         if (existing != null) Object.DestroyImmediate(existing);
 
         var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -451,18 +512,21 @@ public static class BakeScene
     // ────────────────────────────────────────────
     private static void WireReferences()
     {
-        var spawnerObj = GameObject.Find("CustomerSpawner");
+        var spawnerObj = FindInScene("CustomerSpawner");
         if (spawnerObj != null)
         {
             var spawner = spawnerObj.GetComponent<ShopIdle.Customers.CustomerSpawner>();
             if (spawner != null)
             {
-                var prefab = GameObject.Find("CustomerPrefab");
-                var spawnPt = GameObject.Find("SpawnPoint");
-                var exitPt = GameObject.Find("ExitPoint");
-                var queueObj = GameObject.Find("CustomerQueue");
+                // Load prefab ASSET (not a scene object)
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(CustomerPrefabPath);
+                var spawnPt = FindInScene("SpawnPoint");
+                var exitPt = FindInScene("ExitPoint");
+                var queueObj = FindInScene("CustomerQueue");
 
                 if (prefab != null) SetField(spawner, "_customerPrefab", prefab);
+                else Debug.LogError("[BakeScene] CustomerPrefab.prefab not found at " + CustomerPrefabPath);
+
                 if (spawnPt != null) SetField(spawner, "_spawnPoint", spawnPt.transform);
                 if (exitPt != null) SetField(spawner, "_exitPoint", exitPt.transform);
                 if (queueObj != null)
@@ -470,21 +534,21 @@ public static class BakeScene
             }
         }
 
-        var cashierObj = GameObject.Find("CashierZone");
+        var cashierObj = FindInScene("CashierZone");
         if (cashierObj != null)
         {
             var counterZone = cashierObj.GetComponent<ShopIdle.Customers.CounterZone>();
             if (counterZone != null)
             {
-                var queueObj = GameObject.Find("CustomerQueue");
+                var queueObj = FindInScene("CustomerQueue");
                 if (queueObj != null)
                     SetField(counterZone, "_queue", queueObj.GetComponent<ShopIdle.Customers.CustomerQueue>());
 
-                var spawnerObj2 = GameObject.Find("CustomerSpawner");
+                var spawnerObj2 = FindInScene("CustomerSpawner");
                 if (spawnerObj2 != null)
                     SetField(counterZone, "_spawner", spawnerObj2.GetComponent<ShopIdle.Customers.CustomerSpawner>());
 
-                var moneySpotObj = GameObject.Find("MoneySpot");
+                var moneySpotObj = FindInScene("MoneySpot");
                 if (moneySpotObj != null)
                     SetField(counterZone, "_moneySpot", moneySpotObj.GetComponent<ShopIdle.Money.MoneySpot>());
             }
@@ -492,25 +556,24 @@ public static class BakeScene
     }
 
     // ────────────────────────────────────────────
-    // Game View resolution: 1080x1920 portrait
-    // ────────────────────────────────────────────
-    // ────────────────────────────────────────────
-    // UpgradeManager (runtime controller for upgrade zones)
+    // UpgradeManager
     // ────────────────────────────────────────────
     private static void CreateUpgradeManager()
     {
-        if (GameObject.Find("UpgradeManager") != null) return;
+        if (FindInScene("UpgradeManager") != null) return;
 
         var obj = new GameObject("UpgradeManager");
         Undo.RegisterCreatedObjectUndo(obj, "Create UpgradeManager");
         obj.AddComponent<ShopIdle.Upgrades.UpgradeManager>();
     }
 
+    // ────────────────────────────────────────────
+    // Game View resolution
+    // ────────────────────────────────────────────
     private static void SetGameViewResolution()
     {
         try
         {
-            var gameViewType = typeof(Editor).Assembly.GetType("UnityEditor.GameView");
             var sizesType = typeof(Editor).Assembly.GetType("UnityEditor.GameViewSizes");
             var singleType = typeof(ScriptableSingleton<>).MakeGenericType(sizesType);
             var instanceProp = singleType.GetProperty("instance");
@@ -528,32 +591,25 @@ public static class BakeScene
             for (int i = 0; i < count; i++)
             {
                 var size = getGameViewSize.Invoke(group, new object[] { i });
-                var widthProp = size.GetType().GetProperty("width");
-                var heightProp = size.GetType().GetProperty("height");
-                int w = (int)widthProp.GetValue(size);
-                int h = (int)heightProp.GetValue(size);
-                if (w == 1080 && h == 1920)
-                {
-                    found = true;
-                    break;
-                }
+                int w = (int)size.GetType().GetProperty("width").GetValue(size);
+                int h = (int)size.GetType().GetProperty("height").GetValue(size);
+                if (w == 1080 && h == 1920) { found = true; break; }
             }
 
             if (!found)
             {
-                var gameViewSizeType = typeof(Editor).Assembly.GetType("UnityEditor.GameViewSize");
-                var gameViewSizeTypeEnum = typeof(Editor).Assembly.GetType("UnityEditor.GameViewSizeType");
-                var ctor = gameViewSizeType.GetConstructor(new System.Type[] {
-                    gameViewSizeTypeEnum, typeof(int), typeof(int), typeof(string) });
+                var gvsType = typeof(Editor).Assembly.GetType("UnityEditor.GameViewSize");
+                var gvsEnum = typeof(Editor).Assembly.GetType("UnityEditor.GameViewSizeType");
+                var ctor = gvsType.GetConstructor(new System.Type[] {
+                    gvsEnum, typeof(int), typeof(int), typeof(string) });
                 var newSize = ctor.Invoke(new object[] { 1, 1080, 1920, "Portrait 1080x1920" });
-                var addMethod = groupType.GetMethod("AddCustomSize");
-                addMethod.Invoke(group, new object[] { newSize });
+                groupType.GetMethod("AddCustomSize").Invoke(group, new object[] { newSize });
                 Debug.Log("[BakeScene] Added Game view resolution 1080x1920");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogWarning($"[BakeScene] Could not set Game view resolution: {e.Message}. Set it manually to 1080x1920.");
+            Debug.LogWarning($"[BakeScene] Could not set Game view resolution: {e.Message}");
         }
     }
 

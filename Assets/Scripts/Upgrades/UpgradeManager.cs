@@ -132,9 +132,9 @@ namespace ShopIdle.Upgrades
             mat.color = color;
             mat.SetFloat("_Surface", 1f);
             mat.SetOverrideTag("RenderType", "Transparent");
-            mat.SetInteger("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            mat.SetInteger("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            mat.SetInteger("_ZWrite", 0);
+            mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetFloat("_ZWrite", 0f);
             mat.renderQueue = 3000;
             mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             marker.GetComponent<MeshRenderer>().material = mat;

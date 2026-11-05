@@ -32,9 +32,9 @@ namespace ShopIdle.Money
 
         public int SpendUpTo(int maxAmount)
         {
+            if (maxAmount <= 0 || _totalMoney <= 0) return 0;
             int spent = Mathf.Min(maxAmount, _totalMoney);
-            if (spent <= 0) return 0;
-            _totalMoney -= spent;
+            _totalMoney = Mathf.Max(0, _totalMoney - spent);
             PlayerPrefs.SetInt("TotalMoney", _totalMoney);
             OnMoneyChanged?.Invoke(_totalMoney);
             return spent;

@@ -79,18 +79,20 @@ namespace ShopIdle.Upgrades
         private void Update()
         {
             if (_purchased || _playerInRange == null) return;
-            if (Money.MoneyManager.Instance == null) return;
-            if (Money.MoneyManager.Instance.TotalMoney <= 0) return;
+            if (_remaining <= 0) return;
+
+            var mm = Money.MoneyManager.Instance;
+            if (mm == null || mm.TotalMoney <= 0) return;
 
             _drainTimer += Time.deltaTime;
             if (_drainTimer < _drainInterval) return;
             _drainTimer = 0f;
 
-            int spent = Money.MoneyManager.Instance.SpendUpTo(
-                Mathf.Min(_drainPerTick, _remaining));
+            int want = Mathf.Min(_drainPerTick, _remaining);
+            int spent = mm.SpendUpTo(want);
             if (spent <= 0) return;
 
-            _remaining -= spent;
+            _remaining = Mathf.Max(0, _remaining - spent);
             SpawnMoneyFlyVisual();
             UpdateLabel();
 
@@ -161,9 +163,9 @@ namespace ShopIdle.Upgrades
             mat.color = color;
             mat.SetFloat("_Surface", 1f);
             mat.SetOverrideTag("RenderType", "Transparent");
-            mat.SetInteger("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            mat.SetInteger("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            mat.SetInteger("_ZWrite", 0);
+            mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetFloat("_ZWrite", 0f);
             mat.renderQueue = 3000;
             mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             return mat;
