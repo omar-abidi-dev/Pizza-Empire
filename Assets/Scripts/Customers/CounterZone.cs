@@ -137,11 +137,26 @@ namespace ShopIdle.Customers
 
         private void CompleteOrder(Customer customer)
         {
-            if (_moneySpot != null && _currentOrderTotal > 0)
-                _moneySpot.SpawnBills(_currentOrderTotal);
-
+            int earned = _currentOrderTotal;
             _currentOrderTotal = 0;
             _queue.RemoveFirst();
+
+            // 40% chance to dine in if tables exist
+            var tm = Tables.TableManager.Instance;
+            if (tm != null && Random.value < 0.4f)
+            {
+                var table = tm.TryReserveSeat(out int seatIndex);
+                if (table != null)
+                {
+                    customer.AssignDineIn(table, seatIndex, earned,
+                        _spawner.ExitPosition);
+                    return;
+                }
+            }
+
+            // Normal flow: money at counter, exit
+            if (_moneySpot != null && earned > 0)
+                _moneySpot.SpawnBills(earned);
             _spawner.SendCustomerToExit(customer);
         }
 

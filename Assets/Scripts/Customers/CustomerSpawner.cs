@@ -15,6 +15,8 @@ namespace ShopIdle.Customers
         [Header("References")]
         [SerializeField] private CustomerQueue _queue;
 
+        public Vector3 ExitPosition => _exitPoint != null ? _exitPoint.position : Vector3.zero;
+
         private float _spawnTimer;
 
         private static readonly Color[] CustomerColors = new Color[]

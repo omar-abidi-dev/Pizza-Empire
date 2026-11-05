@@ -19,6 +19,14 @@ namespace ShopIdle.Customers
         private bool _isServed;
         private System.Action<Customer> _onReachedExit;
 
+        // Dine-in state
+        private Tables.DineInTable _dineTable;
+        private int _dineSeat;
+        private int _dineMoneyAmount;
+        private Vector3 _exitPosition;
+        private float _eatTimer;
+        private bool _isDining;
+
         public int PizzasRemaining => _pizzasWanted - _pizzasReceived;
         public bool IsFullyServed => _pizzasReceived >= _pizzasWanted;
 
@@ -54,10 +62,33 @@ namespace ShopIdle.Customers
                 _speechBubble.SetActive(false);
         }
 
+        public void AssignDineIn(Tables.DineInTable table, int seatIndex,
+            int moneyAmount, Vector3 exitPos)
+        {
+            _dineTable = table;
+            _dineSeat = seatIndex;
+            _dineMoneyAmount = moneyAmount;
+            _exitPosition = exitPos;
+            _isDining = true;
+            _eatTimer = 0f;
+            MarkServed();
+            SetTarget(table.GetSeatWorldPos(seatIndex));
+        }
+
         private void Update()
         {
-            if (!_hasTarget) return;
+            if (_hasTarget)
+            {
+                MoveToward();
+                return;
+            }
 
+            if (_isDining)
+                HandleDining();
+        }
+
+        private void MoveToward()
+        {
             Vector3 dir = _targetPosition - transform.position;
             dir.y = 0f;
             float dist = dir.magnitude;
@@ -66,10 +97,8 @@ namespace ShopIdle.Customers
             {
                 _hasTarget = false;
 
-                if (_isServed)
-                {
+                if (_isServed && !_isDining)
                     _onReachedExit?.Invoke(this);
-                }
                 return;
             }
 
@@ -79,13 +108,23 @@ namespace ShopIdle.Customers
 
             transform.position += move;
 
-            // Face movement direction
             if (dir.sqrMagnitude > 0.01f)
             {
                 Quaternion targetRot = Quaternion.LookRotation(dir.normalized, Vector3.up);
                 transform.rotation = Quaternion.RotateTowards(
                     transform.rotation, targetRot, 720f * Time.deltaTime);
             }
+        }
+
+        private void HandleDining()
+        {
+            _eatTimer += Time.deltaTime;
+            if (_eatTimer < 5f) return;
+
+            _isDining = false;
+            if (_dineTable != null)
+                _dineTable.CustomerFinished(_dineSeat, _dineMoneyAmount);
+            SetTarget(_exitPosition);
         }
 
         private void UpdateOrderDisplay()

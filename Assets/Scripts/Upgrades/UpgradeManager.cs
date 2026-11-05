@@ -22,6 +22,9 @@ namespace ShopIdle.Upgrades
             new UpgradeDef { Id = "HireChef",     Name = "Hire Chef",     Cost = 250, Position = new Vector3(5f, 0f, 5f) },
             new UpgradeDef { Id = "ChefSpeed",    Name = "Chef Speed",    Cost = 300, Position = new Vector3(-2f, 0f, 2f) },
             new UpgradeDef { Id = "ChefCapacity", Name = "Chef Capacity", Cost = 350, Position = new Vector3(5f, 0f, 8f) },
+            new UpgradeDef { Id = "DiningArea",  Name = "Dining Area",  Cost = 400, Position = new Vector3(-5f, 0f, -2f) },
+            new UpgradeDef { Id = "MoreTables",  Name = "More Tables",  Cost = 600, Position = new Vector3(-5f, 0f, -5f) },
+            new UpgradeDef { Id = "HireCleaner", Name = "Hire Cleaner", Cost = 700, Position = new Vector3(2f, 0f, -3f) },
         };
 
         private int _nextIndex;
@@ -90,6 +93,9 @@ namespace ShopIdle.Upgrades
                 case "HireChef":     ApplyHireChef();     break;
                 case "ChefSpeed":    ApplyChefSpeed();    break;
                 case "ChefCapacity": ApplyChefCapacity(); break;
+                case "DiningArea":  ApplyDiningArea();  break;
+                case "MoreTables":  ApplyMoreTables();  break;
+                case "HireCleaner": ApplyHireCleaner(); break;
             }
         }
 
@@ -246,6 +252,129 @@ namespace ShopIdle.Upgrades
             var chefs = Object.FindObjectsByType<Workers.ChefWorker>(FindObjectsSortMode.None);
             foreach (var chef in chefs)
                 chef.SetMaxCarry(bigCapacity);
+        }
+
+        // ────────────────────────────────────────────
+        // Tables
+        // ────────────────────────────────────────────
+
+        private void EnsureTableManager()
+        {
+            if (Tables.TableManager.Instance != null) return;
+            var obj = new GameObject("TableManager");
+            obj.AddComponent<Tables.TableManager>();
+        }
+
+        private void ApplyDiningArea()
+        {
+            EnsureTableManager();
+            CreateTable("DineTable1", new Vector3(4.5f, 0f, 1f));
+            CreateTable("DineTable2", new Vector3(4.5f, 0f, -2f));
+        }
+
+        private void ApplyMoreTables()
+        {
+            EnsureTableManager();
+            CreateTable("DineTable3", new Vector3(4.5f, 0f, -5f));
+            CreateTable("DineTable4", new Vector3(2f, 0f, -5f));
+        }
+
+        private void CreateTable(string name, Vector3 position)
+        {
+            if (GameObject.Find(name) != null) return;
+
+            var tableObj = new GameObject(name);
+            tableObj.transform.position = position;
+
+            // Table top (flat brown cube)
+            var top = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            top.name = "TableTop";
+            top.transform.SetParent(tableObj.transform);
+            top.transform.localPosition = new Vector3(0f, 0.5f, 0f);
+            top.transform.localScale = new Vector3(1.2f, 0.08f, 0.8f);
+            Object.Destroy(top.GetComponent<BoxCollider>());
+
+            var topMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            topMat.color = new Color(0.6f, 0.4f, 0.2f);
+            top.GetComponent<MeshRenderer>().material = topMat;
+
+            // Table leg
+            var leg = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            leg.name = "TableLeg";
+            leg.transform.SetParent(tableObj.transform);
+            leg.transform.localPosition = new Vector3(0f, 0.25f, 0f);
+            leg.transform.localScale = new Vector3(0.15f, 0.25f, 0.15f);
+            Object.Destroy(leg.GetComponent<CapsuleCollider>());
+
+            var legMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            legMat.color = new Color(0.45f, 0.3f, 0.15f);
+            leg.GetComponent<MeshRenderer>().material = legMat;
+
+            // Chair 1 (left)
+            CreateChair(tableObj.transform, new Vector3(-0.9f, 0f, 0f));
+            // Chair 2 (right)
+            CreateChair(tableObj.transform, new Vector3(0.9f, 0f, 0f));
+
+            // Trigger collider for player cleaning / money pickup
+            var col = tableObj.AddComponent<BoxCollider>();
+            col.isTrigger = true;
+            col.size = new Vector3(3f, 2f, 2f);
+            col.center = new Vector3(0f, 1f, 0f);
+
+            // DineInTable component
+            var table = tableObj.AddComponent<Tables.DineInTable>();
+
+            // Register with manager
+            var tm = Tables.TableManager.Instance;
+            if (tm != null)
+                tm.RegisterTable(table);
+        }
+
+        private void CreateChair(Transform parent, Vector3 localPos)
+        {
+            // Seat
+            var seat = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            seat.name = "Chair";
+            seat.transform.SetParent(parent);
+            seat.transform.localPosition = localPos + new Vector3(0f, 0.3f, 0f);
+            seat.transform.localScale = new Vector3(0.4f, 0.06f, 0.4f);
+            Object.Destroy(seat.GetComponent<BoxCollider>());
+
+            var seatMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            seatMat.color = new Color(0.5f, 0.35f, 0.18f);
+            seat.GetComponent<MeshRenderer>().material = seatMat;
+
+            // Backrest
+            var back = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            back.name = "ChairBack";
+            back.transform.SetParent(parent);
+            float backX = localPos.x > 0 ? localPos.x + 0.17f : localPos.x - 0.17f;
+            back.transform.localPosition = new Vector3(backX, 0.5f, 0f);
+            back.transform.localScale = new Vector3(0.06f, 0.35f, 0.35f);
+            Object.Destroy(back.GetComponent<BoxCollider>());
+            back.GetComponent<MeshRenderer>().material = seatMat;
+        }
+
+        private void ApplyHireCleaner()
+        {
+            if (GameObject.Find("CleanerWorker") != null) return;
+
+            var cleaner = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            cleaner.name = "CleanerWorker";
+            cleaner.transform.position = new Vector3(3f, 0.5f, -1f);
+            Object.Destroy(cleaner.GetComponent<CapsuleCollider>());
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.color = new Color(0.45f, 0.85f, 0.45f);
+            cleaner.GetComponent<MeshRenderer>().material = mat;
+
+            var agent = cleaner.AddComponent<NavMeshAgent>();
+            agent.speed = 3f;
+            agent.radius = 0.4f;
+            agent.height = 2f;
+            agent.stoppingDistance = 1.5f;
+
+            cleaner.AddComponent<Workers.CleanerWorker>();
         }
     }
 }
