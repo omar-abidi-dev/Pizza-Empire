@@ -21,6 +21,8 @@ namespace ShopIdle.Player
         public bool IsFull => _pizzas.Count >= _maxCapacity;
         public int MaxCapacity => _maxCapacity;
 
+        public void SetMaxCapacity(int newMax) { _maxCapacity = newMax; }
+
         private void Update()
         {
             if (_maxLabel != null)

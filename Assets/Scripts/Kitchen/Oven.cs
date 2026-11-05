@@ -21,6 +21,13 @@ namespace ShopIdle.Kitchen
         [Header("Pizza Prefab")]
         [SerializeField] private GameObject _pizzaPrefab;
 
+        public GameObject PizzaPrefab => _pizzaPrefab;
+        public float ProduceInterval => _produceInterval;
+
+        public void SetPizzaPrefab(GameObject prefab) { _pizzaPrefab = prefab; }
+        public void SetTrayAnchor(Transform anchor) { _trayAnchor = anchor; }
+        public void SetProduceInterval(float interval) { _produceInterval = interval; }
+
         private readonly List<Transform> _trayPizzas = new List<Transform>();
         private float _produceTimer;
         private float _pickupTimer;

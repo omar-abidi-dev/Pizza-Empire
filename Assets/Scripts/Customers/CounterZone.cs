@@ -18,12 +18,58 @@ namespace ShopIdle.Customers
         private float _serveTimer;
         private int _currentOrderTotal;
 
+        private bool _hasCashierWorker;
+        private int _storedPizzas;
+        private float _depositTimer;
+        private const float DepositInterval = 0.12f;
+
+        public void EnableCashierWorker() { _hasCashierWorker = true; }
+
         private void Update()
         {
-            if (_playerInRange == null) return;
-            if (_playerInRange.Count == 0) return;
+            Customer customer = _queue != null ? _queue.FirstCustomer : null;
 
-            Customer customer = _queue.FirstCustomer;
+            if (_hasCashierWorker)
+            {
+                DepositFromPlayer();
+                AutoServe(customer);
+            }
+            else
+            {
+                ManualServe(customer);
+            }
+        }
+
+        private void DepositFromPlayer()
+        {
+            if (_playerInRange == null || _playerInRange.Count == 0) return;
+
+            _depositTimer += Time.deltaTime;
+            if (_depositTimer < DepositInterval) return;
+            _depositTimer = 0f;
+
+            Transform pizza = _playerInRange.RemoveTopPizza();
+            if (pizza == null) return;
+            Destroy(pizza.gameObject);
+            _storedPizzas++;
+        }
+
+        private void AutoServe(Customer customer)
+        {
+            if (_storedPizzas <= 0) return;
+            if (customer == null || customer.PizzasRemaining <= 0) return;
+
+            _serveTimer += Time.deltaTime;
+            if (_serveTimer < _serveInterval) return;
+            _serveTimer = 0f;
+
+            _storedPizzas--;
+            FlyPizzaToCustomer(customer);
+        }
+
+        private void ManualServe(Customer customer)
+        {
+            if (_playerInRange == null || _playerInRange.Count == 0) return;
             if (customer == null || customer.PizzasRemaining <= 0) return;
 
             _serveTimer += Time.deltaTime;
@@ -33,12 +79,36 @@ namespace ShopIdle.Customers
             ServePizza(customer);
         }
 
+        private void FlyPizzaToCustomer(Customer customer)
+        {
+            var pizzaObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            pizzaObj.transform.localScale = new Vector3(0.4f, 0.05f, 0.4f);
+            pizzaObj.transform.position = transform.position + Vector3.up;
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.color = new Color(1f, 0.85f, 0.2f);
+            pizzaObj.GetComponent<MeshRenderer>().material = mat;
+            Destroy(pizzaObj.GetComponent<CapsuleCollider>());
+
+            Vector3 endPos = customer.transform.position + Vector3.up * 1.2f;
+            var fly = pizzaObj.AddComponent<Kitchen.PizzaFly>();
+            fly.Init(pizzaObj.transform.position, endPos, _flyDuration, () =>
+            {
+                Destroy(pizzaObj);
+            });
+
+            customer.ReceivePizza();
+            _currentOrderTotal += _moneyPerPizza;
+
+            if (customer.IsFullyServed)
+                CompleteOrder(customer);
+        }
+
         private void ServePizza(Customer customer)
         {
             Transform pizza = _playerInRange.RemoveTopPizza();
             if (pizza == null) return;
 
-            // Fly pizza to customer
             Vector3 startPos = pizza.position;
             Vector3 endPos = customer.transform.position + Vector3.up * 1.2f;
 
@@ -51,25 +121,17 @@ namespace ShopIdle.Customers
             customer.ReceivePizza();
             _currentOrderTotal += _moneyPerPizza;
 
-            // Check if order complete
             if (customer.IsFullyServed)
-            {
                 CompleteOrder(customer);
-            }
         }
 
         private void CompleteOrder(Customer customer)
         {
-            // Spawn money on the counter
             if (_moneySpot != null && _currentOrderTotal > 0)
                 _moneySpot.SpawnBills(_currentOrderTotal);
 
             _currentOrderTotal = 0;
-
-            // Remove from queue
             _queue.RemoveFirst();
-
-            // Send to exit
             _spawner.SendCustomerToExit(customer);
         }
 
@@ -82,7 +144,7 @@ namespace ShopIdle.Customers
             if (stack != null)
             {
                 _playerInRange = stack;
-                _serveTimer = _serveInterval; // Serve immediately
+                _serveTimer = _serveInterval;
             }
         }
 

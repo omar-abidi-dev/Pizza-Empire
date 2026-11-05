@@ -34,6 +34,7 @@ public static class BakeScene
         AdjustCamera();
         AddWalls();
         WireReferences();
+        CreateUpgradeManager();
         SetGameViewResolution();
 
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
@@ -493,6 +494,18 @@ public static class BakeScene
     // ────────────────────────────────────────────
     // Game View resolution: 1080x1920 portrait
     // ────────────────────────────────────────────
+    // ────────────────────────────────────────────
+    // UpgradeManager (runtime controller for upgrade zones)
+    // ────────────────────────────────────────────
+    private static void CreateUpgradeManager()
+    {
+        if (GameObject.Find("UpgradeManager") != null) return;
+
+        var obj = new GameObject("UpgradeManager");
+        Undo.RegisterCreatedObjectUndo(obj, "Create UpgradeManager");
+        obj.AddComponent<ShopIdle.Upgrades.UpgradeManager>();
+    }
+
     private static void SetGameViewResolution()
     {
         try

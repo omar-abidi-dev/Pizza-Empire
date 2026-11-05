@@ -30,6 +30,16 @@ namespace ShopIdle.Money
             OnMoneyChanged?.Invoke(_totalMoney);
         }
 
+        public int SpendUpTo(int maxAmount)
+        {
+            int spent = Mathf.Min(maxAmount, _totalMoney);
+            if (spent <= 0) return 0;
+            _totalMoney -= spent;
+            PlayerPrefs.SetInt("TotalMoney", _totalMoney);
+            OnMoneyChanged?.Invoke(_totalMoney);
+            return spent;
+        }
+
         private void OnDestroy()
         {
             if (_instance == this)
