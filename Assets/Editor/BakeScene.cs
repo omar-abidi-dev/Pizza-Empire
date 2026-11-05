@@ -1,6 +1,8 @@
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using Unity.AI.Navigation;
 using TMPro;
 
 /// <summary>
@@ -40,6 +42,7 @@ public static class BakeScene
         AddWalls();
         WireReferences();
         CreateUpgradeManager();
+        SetupNavMesh();
         SetGameViewResolution();
 
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
@@ -565,6 +568,48 @@ public static class BakeScene
         var obj = new GameObject("UpgradeManager");
         Undo.RegisterCreatedObjectUndo(obj, "Create UpgradeManager");
         obj.AddComponent<ShopIdle.Upgrades.UpgradeManager>();
+    }
+
+    // ────────────────────────────────────────────
+    // NavMesh
+    // ────────────────────────────────────────────
+    private static void SetupNavMesh()
+    {
+        // Bake NavMeshSurface first (uses physics colliders for geometry)
+        var floor = FindInScene("Floor");
+        if (floor == null)
+        {
+            Debug.LogWarning("[BakeScene] Floor not found — skipping NavMesh bake");
+            return;
+        }
+
+        var surface = floor.GetComponent<NavMeshSurface>();
+        if (surface == null)
+            surface = floor.AddComponent<NavMeshSurface>();
+
+        surface.collectObjects = CollectObjects.All;
+        surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
+        surface.BuildNavMesh();
+        EditorUtility.SetDirty(floor);
+
+        // Add NavMeshObstacle to dynamic/blocking objects (carve at runtime)
+        AddObstacle("Counter");
+        AddObstacle("Oven");
+
+        Debug.Log("[BakeScene] NavMesh baked on Floor");
+    }
+
+    private static void AddObstacle(string name)
+    {
+        var obj = FindInScene(name);
+        if (obj == null) return;
+
+        var obstacle = obj.GetComponent<NavMeshObstacle>();
+        if (obstacle == null)
+            obstacle = obj.AddComponent<NavMeshObstacle>();
+
+        obstacle.carving = true;
+        EditorUtility.SetDirty(obj);
     }
 
     // ────────────────────────────────────────────

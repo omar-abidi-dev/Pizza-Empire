@@ -25,17 +25,27 @@ namespace ShopIdle.Customers
 
         public void EnableCashierWorker() { _hasCashierWorker = true; }
 
+        public void DepositFromChef(int count)
+        {
+            _storedPizzas += count;
+        }
+
         private void Update()
         {
             Customer customer = _queue != null ? _queue.FirstCustomer : null;
 
+            // Player deposits into storage when cashier is active
             if (_hasCashierWorker)
-            {
                 DepositFromPlayer();
+
+            // Auto-serve from stored pizzas (deposited by chef or player)
+            if (_storedPizzas > 0)
+            {
                 AutoServe(customer);
             }
-            else
+            else if (!_hasCashierWorker)
             {
+                // Direct serve from player's hand stack
                 ManualServe(customer);
             }
         }

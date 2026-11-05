@@ -23,10 +23,22 @@ namespace ShopIdle.Kitchen
 
         public GameObject PizzaPrefab => _pizzaPrefab;
         public float ProduceInterval => _produceInterval;
+        public int TrayCount => _trayPizzas.Count;
 
         public void SetPizzaPrefab(GameObject prefab) { _pizzaPrefab = prefab; }
         public void SetTrayAnchor(Transform anchor) { _trayAnchor = anchor; }
         public void SetProduceInterval(float interval) { _produceInterval = interval; }
+
+        public Transform TakeTopPizza()
+        {
+            if (_trayPizzas.Count == 0) return null;
+            int last = _trayPizzas.Count - 1;
+            Transform pizza = _trayPizzas[last];
+            _trayPizzas.RemoveAt(last);
+            RestackTray();
+            pizza.SetParent(null);
+            return pizza;
+        }
 
         private readonly List<Transform> _trayPizzas = new List<Transform>();
         private float _produceTimer;
