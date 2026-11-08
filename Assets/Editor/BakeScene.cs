@@ -42,6 +42,7 @@ public static class BakeScene
         AddWalls();
         WireReferences();
         CreateUpgradeManager();
+        CreateSaveManager();
         SetupNavMesh();
         SetGameViewResolution();
 
@@ -57,7 +58,17 @@ public static class BakeScene
     {
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
-        Debug.Log("[BakeScene] PlayerPrefs cleared. Restart Play Mode to test from $0.");
+
+        // Delete JSON save file
+        string savePath = System.IO.Path.Combine(
+            Application.persistentDataPath, "save.json");
+        if (System.IO.File.Exists(savePath))
+        {
+            System.IO.File.Delete(savePath);
+            Debug.Log("[BakeScene] Deleted save file: " + savePath);
+        }
+
+        Debug.Log("[BakeScene] Progress reset. Restart Play Mode to test from $0.");
     }
 
     // ────────────────────────────────────────────
@@ -568,6 +579,19 @@ public static class BakeScene
         var obj = new GameObject("UpgradeManager");
         Undo.RegisterCreatedObjectUndo(obj, "Create UpgradeManager");
         obj.AddComponent<ShopIdle.Upgrades.UpgradeManager>();
+    }
+
+    // ────────────────────────────────────────────
+    // SaveManager + OfflineEarningsUI
+    // ────────────────────────────────────────────
+    private static void CreateSaveManager()
+    {
+        if (FindInScene("SaveManager") != null) return;
+
+        var obj = new GameObject("SaveManager");
+        Undo.RegisterCreatedObjectUndo(obj, "Create SaveManager");
+        obj.AddComponent<ShopIdle.Save.SaveManager>();
+        obj.AddComponent<ShopIdle.Save.OfflineEarningsUI>();
     }
 
     // ────────────────────────────────────────────

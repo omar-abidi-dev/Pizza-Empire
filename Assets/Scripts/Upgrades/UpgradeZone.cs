@@ -21,6 +21,9 @@ namespace ShopIdle.Upgrades
 
         public event System.Action OnPurchased;
 
+        public int TotalCost => _totalCost;
+        public int Remaining => _remaining;
+
         private static readonly Color ZoneColor = new Color(0.6f, 0.3f, 1f, 0.5f);
         private static readonly Color OutlineColor = new Color(0.6f, 0.3f, 1f, 0.18f);
         private const float ZoneSize = 2.5f;
@@ -30,6 +33,13 @@ namespace ShopIdle.Upgrades
             _totalCost = cost;
             _remaining = cost;
             BuildVisuals(displayName);
+        }
+
+        /// <summary>Restore partial payment progress from save data.</summary>
+        public void SetPartialSpent(int spent)
+        {
+            _remaining = Mathf.Max(0, _totalCost - spent);
+            UpdateLabel();
         }
 
         private void BuildVisuals(string displayName)

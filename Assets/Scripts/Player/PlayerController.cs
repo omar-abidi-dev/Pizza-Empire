@@ -30,6 +30,16 @@ namespace ShopIdle.Player
             var cam = UnityEngine.Camera.main;
             if (cam != null)
                 _cameraTransform = cam.transform;
+
+            // Restore saved position
+            var sm = Save.SaveManager.Instance;
+            if (sm != null && sm.Data != null && sm.Data.lastSaveTimestamp > 0)
+            {
+                var pos = new Vector3(sm.Data.playerX, sm.Data.playerY, sm.Data.playerZ);
+                _controller.enabled = false;
+                transform.position = pos;
+                _controller.enabled = true;
+            }
         }
 
         private void OnEnable()

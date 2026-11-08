@@ -39,27 +39,50 @@ namespace ShopIdle.Upgrades
         private UpgradeZone _activeZone;
         private bool _isLivePurchase;
 
+        /// <summary>Number of fully purchased upgrades (sequential).</summary>
+        public int PurchasedCount => _nextIndex;
+
+        /// <summary>Amount already spent on the active upgrade zone (0 if none).</summary>
+        public int ActiveZoneSpent
+        {
+            get
+            {
+                if (_activeZone == null) return 0;
+                return _activeZone.TotalCost - _activeZone.Remaining;
+            }
+        }
+
         private void Start()
         {
             ApplyPurchasedUpgrades();
             ShowNextZone();
+            RestorePartialPayment();
         }
 
         private void ApplyPurchasedUpgrades()
         {
             _nextIndex = 0;
-            for (int i = 0; i < AllUpgrades.Length; i++)
+
+            var sm = Save.SaveManager.Instance;
+            int savedCount = 0;
+            if (sm != null && sm.Data != null)
+                savedCount = sm.Data.purchasedUpgradeCount;
+
+            for (int i = 0; i < savedCount && i < AllUpgrades.Length; i++)
             {
-                if (PlayerPrefs.GetInt("Upgrade_" + AllUpgrades[i].Id, 0) == 1)
-                {
-                    ApplyUpgrade(AllUpgrades[i].Id);
-                    _nextIndex = i + 1;
-                }
-                else
-                {
-                    break;
-                }
+                ApplyUpgrade(AllUpgrades[i].Id);
+                _nextIndex = i + 1;
             }
+        }
+
+        private void RestorePartialPayment()
+        {
+            var sm = Save.SaveManager.Instance;
+            if (sm == null || sm.Data == null) return;
+
+            int partial = sm.Data.activeZonePartialSpent;
+            if (partial > 0 && _activeZone != null)
+                _activeZone.SetPartialSpent(partial);
         }
 
         private void ShowNextZone()
@@ -79,12 +102,8 @@ namespace ShopIdle.Upgrades
         {
             if (_nextIndex >= AllUpgrades.Length) return;
 
-            var def = AllUpgrades[_nextIndex];
-            PlayerPrefs.SetInt("Upgrade_" + def.Id, 1);
-            PlayerPrefs.Save();
-
             _isLivePurchase = true;
-            ApplyUpgrade(def.Id);
+            ApplyUpgrade(AllUpgrades[_nextIndex].Id);
             _isLivePurchase = false;
 
             _nextIndex++;

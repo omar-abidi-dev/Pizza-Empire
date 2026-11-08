@@ -20,13 +20,22 @@ namespace ShopIdle.Money
                 return;
             }
             _instance = this;
-            _totalMoney = PlayerPrefs.GetInt("TotalMoney", 0);
+
+            // Load from SaveManager instead of PlayerPrefs
+            var sm = Save.SaveManager.Instance;
+            if (sm != null && sm.Data != null)
+                _totalMoney = sm.Data.money;
+        }
+
+        public void SetMoney(int amount)
+        {
+            _totalMoney = amount;
+            OnMoneyChanged?.Invoke(_totalMoney);
         }
 
         public void AddMoney(int amount)
         {
             _totalMoney += amount;
-            PlayerPrefs.SetInt("TotalMoney", _totalMoney);
             OnMoneyChanged?.Invoke(_totalMoney);
         }
 
@@ -35,10 +44,17 @@ namespace ShopIdle.Money
             if (maxAmount <= 0 || _totalMoney <= 0) return 0;
             int spent = Mathf.Min(maxAmount, _totalMoney);
             _totalMoney = Mathf.Max(0, _totalMoney - spent);
-            PlayerPrefs.SetInt("TotalMoney", _totalMoney);
             OnMoneyChanged?.Invoke(_totalMoney);
             return spent;
         }
+
+        #if UNITY_EDITOR
+        private void OnGUI()
+        {
+            if (GUI.Button(new Rect(Screen.width - 110, 10, 100, 40), "+$500"))
+                AddMoney(500);
+        }
+        #endif
 
         private void OnDestroy()
         {
