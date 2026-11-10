@@ -18,6 +18,8 @@ namespace ShopIdle.Upgrades
 
         private GameObject _fillQuad;
         private GameObject _outlineQuad;
+        private float _pulseTimer;
+        private bool _canAfford;
 
         public event System.Action OnPurchased;
 
@@ -88,10 +90,27 @@ namespace ShopIdle.Upgrades
 
         private void Update()
         {
-            if (_purchased || _playerInRange == null) return;
-            if (_remaining <= 0) return;
+            if (_purchased) return;
 
+            // Pulse / grey-out logic
             var mm = Money.MoneyManager.Instance;
+            bool affordable = mm != null && mm.TotalMoney > 0;
+            if (affordable != _canAfford)
+            {
+                _canAfford = affordable;
+                UpdateZoneAppearance();
+            }
+
+            if (_canAfford && _fillQuad != null)
+            {
+                _pulseTimer += Time.deltaTime;
+                float pulse = 1f + Mathf.Sin(_pulseTimer * 3f) * 0.06f;
+                _fillQuad.transform.localScale = new Vector3(
+                    ZoneSize * pulse, ZoneSize * pulse, 1f);
+            }
+
+            if (_playerInRange == null) return;
+            if (_remaining <= 0) return;
             if (mm == null || mm.TotalMoney <= 0) return;
 
             _drainTimer += Time.deltaTime;
@@ -136,9 +155,31 @@ namespace ShopIdle.Upgrades
                 0.25f, () => Destroy(bill));
         }
 
+        private void UpdateZoneAppearance()
+        {
+            if (_fillQuad == null) return;
+            var renderer = _fillQuad.GetComponent<MeshRenderer>();
+            if (renderer == null) return;
+
+            if (_canAfford)
+                renderer.material.color = ZoneColor;
+            else
+                renderer.material.color = new Color(0.35f, 0.35f, 0.35f, 0.4f);
+        }
+
         private IEnumerator PurchaseSequence()
         {
             _purchased = true;
+
+            // Sound + particles
+            Core.AudioManager.Instance?.Play(Core.SoundType.Whoosh);
+            Core.AudioManager.Instance?.Play(Core.SoundType.Fanfare, 0.8f);
+            var juice = Core.JuiceManager.Instance;
+            if (juice != null)
+            {
+                juice.SpawnSparkle(transform.position + Vector3.up, new Color(1f, 0.85f, 0.1f), 20);
+                juice.ShakeCamera(0.15f);
+            }
 
             // Pop scale up
             float t = 0f;

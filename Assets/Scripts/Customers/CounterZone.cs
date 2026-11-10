@@ -141,6 +141,16 @@ namespace ShopIdle.Customers
             _currentOrderTotal = 0;
             _queue.RemoveFirst();
 
+            // Juice: sound + floating text + sparkle
+            Core.AudioManager.Instance?.Play(Core.SoundType.ChaChing);
+            var juice = Core.JuiceManager.Instance;
+            if (juice != null)
+            {
+                Vector3 textPos = customer.transform.position + Vector3.up * 2.5f;
+                juice.SpawnFloatingText($"+${earned}", textPos, new Color(0.2f, 0.9f, 0.3f));
+                juice.SpawnCoinBurst(customer.transform.position + Vector3.up * 1f);
+            }
+
             // 40% chance to dine in if tables exist
             var tm = Tables.TableManager.Instance;
             if (tm != null && Random.value < 0.4f)

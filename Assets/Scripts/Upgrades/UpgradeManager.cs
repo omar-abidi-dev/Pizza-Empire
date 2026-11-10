@@ -450,6 +450,11 @@ namespace ShopIdle.Upgrades
 
             CreateExpansionArea();
             RebakeNavMesh();
+
+            // Big camera shake for expansion
+            Core.JuiceManager.Instance?.ShakeCamera(0.5f);
+            Core.AudioManager.Instance?.Play(Core.SoundType.Fanfare);
+
             StartCoroutine(ShowBanner("NEW AREA UNLOCKED!"));
         }
 

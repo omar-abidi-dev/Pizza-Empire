@@ -9,6 +9,8 @@ namespace ShopIdle.CameraSystem
         [SerializeField] private float _smoothSpeed = 5f;
         [SerializeField] private float _lookAheadY = 1f;
 
+        private Vector3 _shakeOffset;
+
         private void Start()
         {
             if (_target == null)
@@ -30,8 +32,18 @@ namespace ShopIdle.CameraSystem
             if (_target == null) return;
 
             Vector3 desiredPos = _target.position + _offset;
-            transform.position = Vector3.Lerp(transform.position, desiredPos, _smoothSpeed * Time.deltaTime);
+            transform.position = Vector3.Lerp(transform.position, desiredPos, _smoothSpeed * Time.deltaTime)
+                + _shakeOffset;
             transform.LookAt(_target.position + Vector3.up * _lookAheadY);
+
+            _shakeOffset = Vector3.Lerp(_shakeOffset, Vector3.zero, 15f * Time.deltaTime);
+        }
+
+        public void Shake(float intensity = 0.3f)
+        {
+            var rand = Random.insideUnitSphere * intensity;
+            rand.z = 0f;
+            _shakeOffset = rand;
         }
     }
 }

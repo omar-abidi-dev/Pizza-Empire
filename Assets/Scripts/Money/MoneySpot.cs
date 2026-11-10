@@ -90,6 +90,10 @@ namespace ShopIdle.Money
         {
             if (MoneyManager.Instance != null)
                 MoneyManager.Instance.AddMoney(bill.Value);
+
+            Core.AudioManager.Instance?.Play(Core.SoundType.CoinTick, 0.5f);
+            Core.JuiceManager.Instance?.SpawnCoinBurst(
+                bill.transform.position, 4);
         }
 
         private void OnTriggerEnter(Collider other)

@@ -76,6 +76,10 @@ namespace ShopIdle.Kitchen
             t.localRotation = Quaternion.identity;
 
             _trayPizzas.Add(t);
+
+            // Steam puff above oven
+            Core.JuiceManager.Instance?.SpawnSteamPuff(
+                transform.position + Vector3.up * 1.5f);
         }
 
         private void TransferToPlayer()

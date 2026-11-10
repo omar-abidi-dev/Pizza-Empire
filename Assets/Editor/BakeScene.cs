@@ -43,6 +43,7 @@ public static class BakeScene
         WireReferences();
         CreateUpgradeManager();
         CreateSaveManager();
+        CreateJuiceManagers();
         SetupNavMesh();
         SetGameViewResolution();
 
@@ -592,6 +593,26 @@ public static class BakeScene
         Undo.RegisterCreatedObjectUndo(obj, "Create SaveManager");
         obj.AddComponent<ShopIdle.Save.SaveManager>();
         obj.AddComponent<ShopIdle.Save.OfflineEarningsUI>();
+    }
+
+    // ────────────────────────────────────────────
+    // AudioManager + JuiceManager
+    // ────────────────────────────────────────────
+    private static void CreateJuiceManagers()
+    {
+        if (FindInScene("AudioManager") == null)
+        {
+            var obj = new GameObject("AudioManager");
+            Undo.RegisterCreatedObjectUndo(obj, "Create AudioManager");
+            obj.AddComponent<ShopIdle.Core.AudioManager>();
+        }
+
+        if (FindInScene("JuiceManager") == null)
+        {
+            var obj = new GameObject("JuiceManager");
+            Undo.RegisterCreatedObjectUndo(obj, "Create JuiceManager");
+            obj.AddComponent<ShopIdle.Core.JuiceManager>();
+        }
     }
 
     // ────────────────────────────────────────────

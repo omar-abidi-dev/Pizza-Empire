@@ -16,6 +16,8 @@ namespace ShopIdle.Player
         [SerializeField] private GameObject _maxLabel;
 
         private readonly List<Transform> _pizzas = new List<Transform>();
+        private float _wobblePhase;
+        private Vector3 _lastPos;
 
         public int Count => _pizzas.Count;
         public bool IsFull => _pizzas.Count >= _maxCapacity;
@@ -27,6 +29,39 @@ namespace ShopIdle.Player
         {
             if (_maxLabel != null)
                 _maxLabel.SetActive(IsFull);
+
+            // Pizza wobble while moving
+            if (_pizzas.Count > 0)
+            {
+                Vector3 delta = transform.position - _lastPos;
+                float speed = delta.magnitude / Mathf.Max(Time.deltaTime, 0.001f);
+                _lastPos = transform.position;
+
+                if (speed > 0.5f)
+                {
+                    _wobblePhase += Time.deltaTime * 8f;
+                    float wobble = Mathf.Sin(_wobblePhase) * 3f * Mathf.Clamp01(speed / 5f);
+                    for (int i = 0; i < _pizzas.Count; i++)
+                    {
+                        if (_pizzas[i] != null)
+                        {
+                            float layerFactor = (i + 1f) / _pizzas.Count;
+                            _pizzas[i].localRotation = Quaternion.Euler(
+                                wobble * layerFactor, 0f, wobble * 0.5f * layerFactor);
+                        }
+                    }
+                }
+                else
+                {
+                    _wobblePhase = 0f;
+                    for (int i = 0; i < _pizzas.Count; i++)
+                    {
+                        if (_pizzas[i] != null)
+                            _pizzas[i].localRotation = Quaternion.Lerp(
+                                _pizzas[i].localRotation, Quaternion.identity, 10f * Time.deltaTime);
+                    }
+                }
+            }
         }
 
         public bool TryAddPizza(Transform pizza)
@@ -36,6 +71,12 @@ namespace ShopIdle.Player
             _pizzas.Add(pizza);
             pizza.SetParent(_stackAnchor != null ? _stackAnchor : transform);
             SnapPizzaToSlot(pizza, _pizzas.Count - 1);
+
+            Core.AudioManager.Instance?.Play(Core.SoundType.PizzaPickup, 0.7f);
+
+            var pc = GetComponent<PlayerController>();
+            if (pc != null) pc.TriggerPickupBounce();
+
             return true;
         }
 
@@ -47,6 +88,8 @@ namespace ShopIdle.Player
             Transform pizza = _pizzas[lastIndex];
             _pizzas.RemoveAt(lastIndex);
             pizza.SetParent(null);
+
+            Core.AudioManager.Instance?.Play(Core.SoundType.PizzaDrop, 0.5f);
             return pizza;
         }
 
