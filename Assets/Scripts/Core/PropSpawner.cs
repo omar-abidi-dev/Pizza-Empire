@@ -66,7 +66,8 @@ namespace ShopIdle.Core
             return template;
         }
 
-        private static void ApplyPalette(GameObject root)
+        /// <summary>Recolour every renderer under <paramref name="root"/> from the palette by part name.</summary>
+        public static void ApplyPalette(GameObject root)
         {
             foreach (var r in root.GetComponentsInChildren<Renderer>(true))
             {

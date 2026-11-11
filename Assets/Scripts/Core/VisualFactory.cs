@@ -303,6 +303,16 @@ namespace ShopIdle.Core
         public static GameObject BuildPizzaVisual()
         {
             var p = ColorPalette.Instance;
+
+            // Imported model (0.5 m); caller positions/parents it.
+            var model = PropModels.Instance != null ? PropModels.Instance.Pizza : null;
+            if (model != null)
+            {
+                var obj = PropSpawner.Spawn(model, null, Vector3.zero);
+                obj.name = "Pizza";
+                return obj;
+            }
+
             var pizza = new GameObject("Pizza");
 
             // Base disc (crust color)

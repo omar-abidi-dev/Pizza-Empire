@@ -66,6 +66,7 @@ namespace ShopIdle.Core
         public Color pizzaCrust = new(0.92f, 0.78f, 0.45f);
         public Color pizzaSauce = new(0.9f, 0.3f, 0.2f);
         public Color pizzaCheese = new(1f, 0.92f, 0.55f);
+        public Color pizzaTopping = new(0.85f, 0.25f, 0.15f);
 
         [Header("Money")]
         public Color billGreen = new(0.35f, 0.82f, 0.4f);

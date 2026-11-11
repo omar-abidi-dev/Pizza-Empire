@@ -18,7 +18,7 @@ MonoBehaviour:
   _trashBin: {fileID: 8930059882378767298, guid: cdcd53631df384015824d1d9ab0c3ff4, type: 3}
   _driveThruBooth: {fileID: 8443490459599152085, guid: ccd065d3cd32e4e84abaee0eb896748a, type: 3}
   _cashStack: {fileID: 7459078819058896015, guid: a4d27dd5488a244d88e984ce1efaddf9, type: 3}
-  _pizza: {fileID: 0}
+  _pizza: {fileID: -3943383787695814915, guid: 07faef0720a7c4d14992261562aa45af, type: 3}
   _burgerGrill: {fileID: 0}
   _sushiCounter: {fileID: 0}
   _tacoCart: {fileID: 0}
