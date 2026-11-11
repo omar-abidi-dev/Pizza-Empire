@@ -183,6 +183,14 @@ namespace ShopIdle.Core
             var p = ColorPalette.Instance;
             ClearChildren(root);
 
+            // Imported model: front (customer side) faces -Z, register screen faces the cashier.
+            var model = PropModels.Instance != null ? PropModels.Instance.Counter : null;
+            if (model != null)
+            {
+                SpawnModel(model, root, "CounterModel", 180f);
+                return;
+            }
+
             // Base
             CreateChild(root, "CounterBase", PrimitiveType.Cube,
                 new Vector3(0f, 0.35f, 0f), new Vector3(2.2f, 0.7f, 0.9f), p.counterBase);
@@ -413,6 +421,22 @@ namespace ShopIdle.Core
             return obj;
         }
 
+        /// <summary>
+        /// Spawn an imported prop model standing on the floor (y = 0) under <paramref name="root"/>,
+        /// at the root's XZ position plus <paramref name="localOffset"/> (unscaled metres).
+        /// </summary>
+        private static GameObject SpawnModel(GameObject model, Transform root, string name,
+            float yaw, Vector3 localOffset = default)
+        {
+            Vector3 pos = root.position + root.rotation * localOffset;
+            pos.y = FloorY + localOffset.y;
+            var obj = PropSpawner.Spawn(model, root, pos, root.eulerAngles.y + yaw);
+            obj.name = name;
+            return obj;
+        }
+
+        private const float FloorY = 0f;
+
         private static void DestroyColl(GameObject obj)
         {
             var col = obj.GetComponent<Collider>();
@@ -431,7 +455,7 @@ namespace ShopIdle.Core
                     n == "Hat" || n == "HairBun" || n == "Hair" || n == "ChefHat" ||
                     n == "OvenBody" || n == "OvenTop" || n == "OvenDoor" ||
                     n == "OvenGlow" || n == "Handle" || n == "CounterBase" ||
-                    n == "CounterTop" || n == "Cabin")
+                    n == "CounterTop" || n == "Cabin" || n.EndsWith("Model"))
                 {
                     toRemove.Add(child);
                 }

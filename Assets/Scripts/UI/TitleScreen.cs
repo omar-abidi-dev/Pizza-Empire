@@ -172,7 +172,7 @@ namespace ShopIdle.UI
             titleText.fontStyle = FontStyles.Bold;
             titleText.outlineWidth = 0.25f;
             titleText.outlineColor = new Color32(20, 80, 75, 255);
-            titleText.enableWordWrapping = false;
+            titleText.textWrappingMode = TextWrappingModes.NoWrap;
 
             // ── Subtitle ──
             var subObj = CreateUI("Subtitle", _screenRoot.transform);

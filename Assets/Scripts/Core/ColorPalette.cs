@@ -41,6 +41,27 @@ namespace ShopIdle.Core
         public Color tableWood = new(0.72f, 0.55f, 0.35f);
         public Color chairSeat = new(0.6f, 0.45f, 0.28f);
 
+        [Header("Prop Models (glTF part names map to these fields)")]
+        public Color counterTrim = new(0.98f, 0.85f, 0.55f);
+        public Color registerBody = new(0.45f, 0.8f, 0.82f);
+        public Color registerKeys = new(0.98f, 0.96f, 0.94f);
+        public Color screenDark = new(0.3f, 0.32f, 0.4f);
+        public Color screenGlow = new(0.45f, 0.85f, 1f);
+        public Color metalLight = new(0.78f, 0.8f, 0.84f);
+        public Color metalDark = new(0.45f, 0.47f, 0.52f);
+        public Color trashBody = new(0.45f, 0.75f, 0.55f);
+        public Color trashLid = new(0.35f, 0.62f, 0.45f);
+        public Color awningRed = new(0.95f, 0.42f, 0.38f);
+        public Color awningWhite = new(0.98f, 0.96f, 0.94f);
+        public Color boothBody = new(0.98f, 0.82f, 0.45f);
+        public Color paperBand = new(0.98f, 0.95f, 0.85f);
+        public Color grillBody = new(0.95f, 0.55f, 0.35f);
+        public Color sushiWood = new(0.85f, 0.7f, 0.5f);
+        public Color sushiRice = new(0.98f, 0.97f, 0.93f);
+        public Color sushiFish = new(0.98f, 0.55f, 0.45f);
+        public Color cartBody = new(0.4f, 0.75f, 0.85f);
+        public Color wheelGrey = new(0.35f, 0.35f, 0.4f);
+
         [Header("Food")]
         public Color pizzaCrust = new(0.92f, 0.78f, 0.45f);
         public Color pizzaSauce = new(0.9f, 0.3f, 0.2f);

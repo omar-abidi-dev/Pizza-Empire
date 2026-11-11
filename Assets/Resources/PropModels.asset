@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 726ec6acffbd84d58b029d6e295c7698, type: 3}
+  m_Name: PropModels
+  m_EditorClassIdentifier: Assembly-CSharp::ShopIdle.Core.PropModels
+  _counter: {fileID: -561301830214302231, guid: 9908226f6104640fb850166b014340c2, type: 3}
+  _diningTable: {fileID: 0}
+  _chair: {fileID: 0}
+  _trashBin: {fileID: 0}
+  _driveThruBooth: {fileID: 0}
+  _cashStack: {fileID: 0}
+  _pizza: {fileID: 0}
+  _burgerGrill: {fileID: 0}
+  _sushiCounter: {fileID: 0}
+  _tacoCart: {fileID: 0}
