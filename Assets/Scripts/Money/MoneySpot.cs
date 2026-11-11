@@ -34,17 +34,25 @@ namespace ShopIdle.Money
 
         private MoneyPickup CreateBill(int stackIndex)
         {
+            Transform anchor = _billAnchor != null ? _billAnchor : transform;
+            float yaw = Random.Range(-8f, 8f);
+
+            // Cash-stack model (pickup lives on the model root)
+            var stackPos = anchor.position + Vector3.up * (stackIndex * Core.VisualFactory.CashStackHeight);
+            var model = Core.VisualFactory.CreateCashVisual("Bill", stackPos, yaw);
+            if (model != null)
+                return model.AddComponent<MoneyPickup>();
+
             GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
             obj.name = "Bill";
             obj.transform.localScale = new Vector3(0.4f, 0.03f, 0.25f);
 
             // Position on stack
-            Transform anchor = _billAnchor != null ? _billAnchor : transform;
             float y = stackIndex * _billHeight;
             obj.transform.position = anchor.position + Vector3.up * y;
 
             // Slight random rotation for natural look
-            obj.transform.rotation = Quaternion.Euler(0f, Random.Range(-8f, 8f), 0f);
+            obj.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
 
             // Green material from palette
             if (_billMaterial == null)

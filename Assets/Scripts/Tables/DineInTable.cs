@@ -211,6 +211,13 @@ namespace ShopIdle.Tables
 
         private Money.MoneyPickup CreateBill(int stackIndex)
         {
+            // Cash-stack model sitting on the table top (0.55 m)
+            var stackPos = transform.position +
+                new Vector3(0f, 0.55f + stackIndex * Core.VisualFactory.CashStackHeight, 0.2f);
+            var model = Core.VisualFactory.CreateCashVisual("TableBill", stackPos, Random.Range(-15f, 15f));
+            if (model != null)
+                return model.AddComponent<Money.MoneyPickup>();
+
             var obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
             obj.name = "TableBill";
             obj.transform.localScale = new Vector3(0.3f, 0.025f, 0.2f);

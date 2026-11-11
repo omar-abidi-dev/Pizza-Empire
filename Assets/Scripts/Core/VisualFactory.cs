@@ -279,6 +279,22 @@ namespace ShopIdle.Core
             return true;
         }
 
+        /// <summary>Height of one CashStack model, used to stack pickups without overlap.</summary>
+        public const float CashStackHeight = 0.046f;
+
+        /// <summary>
+        /// Spawn a cash-stack model at <paramref name="position"/> (its base).
+        /// Returns null when no model is assigned so callers can fall back to a primitive bill.
+        /// </summary>
+        public static GameObject CreateCashVisual(string name, Vector3 position, float yaw)
+        {
+            var model = PropModels.Instance != null ? PropModels.Instance.CashStack : null;
+            if (model == null) return null;
+            var obj = PropSpawner.Spawn(model, null, position, yaw);
+            obj.name = name;
+            return obj;
+        }
+
         // ═══════════════════════════════════════
         //  Food
         // ═══════════════════════════════════════

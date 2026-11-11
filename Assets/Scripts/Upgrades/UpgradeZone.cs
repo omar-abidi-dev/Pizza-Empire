@@ -147,14 +147,18 @@ namespace ShopIdle.Upgrades
 
         private void SpawnMoneyFlyVisual()
         {
-            var bill = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            bill.name = "FlyBill";
-            bill.transform.localScale = new Vector3(0.3f, 0.03f, 0.2f);
-            bill.transform.position = _playerInRange.position + Vector3.up * 1.5f;
-            Object.Destroy(bill.GetComponent<BoxCollider>());
-
-            bill.GetComponent<MeshRenderer>().material =
-                Core.ColorPalette.MakeLit(Core.ColorPalette.Instance.billGreen);
+            Vector3 start = _playerInRange.position + Vector3.up * 1.5f;
+            var bill = Core.VisualFactory.CreateCashVisual("FlyBill", start, 0f);
+            if (bill == null)
+            {
+                bill = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                bill.name = "FlyBill";
+                bill.transform.localScale = new Vector3(0.3f, 0.03f, 0.2f);
+                bill.transform.position = start;
+                Object.Destroy(bill.GetComponent<BoxCollider>());
+                bill.GetComponent<MeshRenderer>().material =
+                    Core.ColorPalette.MakeLit(Core.ColorPalette.Instance.billGreen);
+            }
 
             var fly = bill.AddComponent<Kitchen.PizzaFly>();
             fly.Init(bill.transform.position, transform.position + Vector3.up * 0.5f,
