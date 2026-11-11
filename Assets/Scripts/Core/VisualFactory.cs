@@ -18,6 +18,16 @@ namespace ShopIdle.Core
             var p = ColorPalette.Instance;
             ClearChildren(root);
             var v = CreateGroundedVisualRoot(root);
+            if (HasKit)
+            {
+                CharacterBuilder.Build(v, new CharacterLook
+                {
+                    Shirt = new Color(1f, 0.55f, 0.28f), Skin = p.playerSkin, Hair = p.hairBrown,
+                    Head = CharacterLook.Headwear.Cap, Apron = true, ApronColor = p.playerApron
+                });
+                ScaleCharacter(v, CharacterBuilder.NaturalHeight);
+                return;
+            }
 
             // Body (capsule)
             var body = CreateChild(v, "Body", PrimitiveType.Capsule,
@@ -55,6 +65,18 @@ namespace ShopIdle.Core
             var p = ColorPalette.Instance;
             Color bodyColor = isVip ? p.vipGold : p.customerBase;
             ClearChildren(root);
+            if (HasKit)
+            {
+                var kv = CreateGroundedVisualRoot(root);
+                CharacterBuilder.Build(kv, new CharacterLook
+                {
+                    Shirt = isVip ? p.vipGold : CustomerShirts[Random.Range(0, CustomerShirts.Length)],
+                    Skin = CharacterBuilder.RandomSkin(), Hair = CharacterBuilder.RandomHair(),
+                    Head = Random.value < 0.5f ? CharacterLook.Headwear.HairShort : CharacterLook.Headwear.HairBun
+                });
+                ScaleCharacter(kv, CharacterBuilder.NaturalHeight);
+                return;
+            }
             var v = CreateGroundedVisualRoot(root, NpcFootOffset);
 
             // Body
@@ -117,6 +139,18 @@ namespace ShopIdle.Core
             };
 
             ClearChildren(root);
+            if (HasKit)
+            {
+                var kv = CreateGroundedVisualRoot(root);
+                CharacterBuilder.Build(kv, new CharacterLook
+                {
+                    Shirt = apronColor, Skin = CharacterBuilder.RandomSkin(), Hair = CharacterBuilder.RandomHair(),
+                    Head = workerType == "Chef" ? CharacterLook.Headwear.ChefHat : CharacterLook.Headwear.Cap,
+                    Apron = true, ApronColor = p.playerApron
+                });
+                ScaleCharacter(kv, CharacterBuilder.NaturalHeight);
+                return;
+            }
             var v = CreateGroundedVisualRoot(root, NpcFootOffset);
 
             // Body
@@ -493,6 +527,15 @@ namespace ShopIdle.Core
         }
 
         private const float FloorY = 0f;
+
+        private static bool HasKit => PropModels.Instance != null && PropModels.Instance.HasCharacterKit;
+
+        /// <summary>Soft shirt colours for model customers.</summary>
+        private static readonly Color[] CustomerShirts =
+        {
+            new(0.55f, 0.7f, 0.95f), new(0.95f, 0.55f, 0.55f), new(0.55f, 0.85f, 0.6f),
+            new(0.98f, 0.82f, 0.4f), new(0.75f, 0.6f, 0.92f), new(0.98f, 0.68f, 0.4f)
+        };
         private const float NpcFootOffset = 0.05f; // customer/worker body capsule bottom (0.5 - 0.45)
         private const float PrimitiveOvenTop = 0.95f; // OvenTop surface, local to the oven root
 

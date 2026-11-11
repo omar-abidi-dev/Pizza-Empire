@@ -22,6 +22,17 @@ namespace ShopIdle.Core
         [SerializeField] private GameObject _tacoCart;
         [SerializeField] private GameObject _oven;
 
+        [Header("Character kit (rig parts)")]
+        [SerializeField] private GameObject _charTorso;
+        [SerializeField] private GameObject _charHead;
+        [SerializeField] private GameObject _charArm;
+        [SerializeField] private GameObject _charLeg;
+        [SerializeField] private GameObject _charCap;
+        [SerializeField] private GameObject _charHairShort;
+        [SerializeField] private GameObject _charHairBun;
+        [SerializeField] private GameObject _charChefHat;
+        [SerializeField] private GameObject _charApron;
+
         public GameObject Counter => _counter;
         public GameObject DiningTable => _diningTable;
         public GameObject Chair => _chair;
@@ -33,6 +44,18 @@ namespace ShopIdle.Core
         public GameObject SushiCounter => _sushiCounter;
         public GameObject TacoCart => _tacoCart;
         public GameObject Oven => _oven;
+        public GameObject CharTorso => _charTorso;
+        public GameObject CharHead => _charHead;
+        public GameObject CharArm => _charArm;
+        public GameObject CharLeg => _charLeg;
+        public GameObject CharCap => _charCap;
+        public GameObject CharHairShort => _charHairShort;
+        public GameObject CharHairBun => _charHairBun;
+        public GameObject CharChefHat => _charChefHat;
+        public GameObject CharApron => _charApron;
+
+        /// <summary>True when the rig parts needed for model characters are assigned.</summary>
+        public bool HasCharacterKit => _charTorso != null && _charHead != null && _charArm != null && _charLeg != null;
 
         private static PropModels _instance;
         private static bool _loaded;

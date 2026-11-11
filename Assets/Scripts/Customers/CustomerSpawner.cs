@@ -119,7 +119,8 @@ namespace ShopIdle.Customers
             // Sit on the head inside the (scaled, floor-pinned) character visual.
             var visual = parent.Find("Visual");
             crown.transform.SetParent(visual != null ? visual : parent, false);
-            crown.transform.localPosition = new Vector3(0f, 1.42f, 0f);
+            bool rig = visual != null && visual.Find("Hips") != null;
+            crown.transform.localPosition = new Vector3(0f, rig ? Core.CharacterBuilder.HeadTop : 1.42f, 0f);
             crown.transform.localScale = new Vector3(0.35f, 0.08f, 0.35f);
             Object.Destroy(crown.GetComponent<CapsuleCollider>());
 

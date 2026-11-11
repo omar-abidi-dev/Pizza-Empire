@@ -23,3 +23,12 @@ MonoBehaviour:
   _sushiCounter: {fileID: 2443453254059287477, guid: bce562a92e149428f83325c47d8a6ad8, type: 3}
   _tacoCart: {fileID: -8689577546660687235, guid: 2d4c93b434a254c47b99b2305910cfaa, type: 3}
   _oven: {fileID: -3954142394141455331, guid: 1d0dcf914052c404d984da0c6067e931, type: 3}
+  _charTorso: {fileID: 28291936544948198, guid: eb209817d6c104c548a6ceabd7dfc711, type: 3}
+  _charHead: {fileID: -3235812562015038443, guid: 8cf0f8741bbee4b8294ac3ba6d5ecbc8, type: 3}
+  _charArm: {fileID: -4779432365422373493, guid: 43a968f3b466644deab965cac6677743, type: 3}
+  _charLeg: {fileID: -4882873652403157357, guid: 2cd719524e3b54c1cb3b76fd261eff8a, type: 3}
+  _charCap: {fileID: -3163231353846160098, guid: ddb08a9c7f7f14c5e81afea40abb5b7c, type: 3}
+  _charHairShort: {fileID: -5616443756850230579, guid: 3921acb2058fc4975a80cb7bb2ac6cb0, type: 3}
+  _charHairBun: {fileID: 7284618662852842833, guid: 06778ba83844041969d85f26b98a05dc, type: 3}
+  _charChefHat: {fileID: -8155443538543116177, guid: 039ba216225734fb79ebfab4b312756c, type: 3}
+  _charApron: {fileID: -8426927477559788768, guid: 01388184d88a44b52aacd15e12c550d6, type: 3}

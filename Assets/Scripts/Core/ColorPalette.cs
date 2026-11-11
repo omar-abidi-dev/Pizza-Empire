@@ -26,6 +26,13 @@ namespace ShopIdle.Core
         public Color customerBase = new(0.7f, 0.75f, 0.82f);
         public Color vipGold = new(1f, 0.82f, 0.25f);
 
+        [Header("Character kit")]
+        public Color pantsNavy = new(0.32f, 0.36f, 0.5f);
+        public Color shoeDark = new(0.3f, 0.26f, 0.28f);
+        public Color eyeInk = new(0.22f, 0.18f, 0.2f);
+        public Color cheekPink = new(0.98f, 0.62f, 0.62f);
+        public Color hairBrown = new(0.45f, 0.28f, 0.18f);
+
         [Header("Workers")]
         public Color chefApron = new(1f, 0.55f, 0.15f);
         public Color cashierApron = new(0.4f, 0.6f, 0.95f);
