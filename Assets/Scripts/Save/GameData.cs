@@ -12,5 +12,10 @@ namespace ShopIdle.Save
         public float playerY;
         public float playerZ;
         public long lastSaveTimestamp;
+
+        // Multi-restaurant
+        public int restaurantIndex;
+        public int restaurantsCompleted;
+        public long totalMoneyEarned;
     }
 }

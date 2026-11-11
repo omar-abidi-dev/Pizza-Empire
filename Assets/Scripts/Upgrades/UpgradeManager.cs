@@ -12,32 +12,32 @@ namespace ShopIdle.Upgrades
         {
             public string Id;
             public string Name;
-            public int Cost;
             public Vector3 Position;
         }
 
         private static readonly UpgradeDef[] AllUpgrades = new[]
         {
-            new UpgradeDef { Id = "SecondOven",   Name = "Second Oven",   Cost = 50,  Position = new Vector3(-6f, 0f, 5.8f) },
-            new UpgradeDef { Id = "BiggerStack",  Name = "Bigger Stack",  Cost = 80,  Position = new Vector3(3f, 0f, 2f) },
-            new UpgradeDef { Id = "FasterOven",   Name = "Faster Oven",   Cost = 120, Position = new Vector3(-4f, 0f, 4f) },
-            new UpgradeDef { Id = "HireCashier",  Name = "Hire Cashier",  Cost = 200, Position = new Vector3(3f, 0f, 8f) },
-            new UpgradeDef { Id = "HireChef",     Name = "Hire Chef",     Cost = 250, Position = new Vector3(5f, 0f, 5f) },
-            new UpgradeDef { Id = "ChefSpeed",    Name = "Chef Speed",    Cost = 300, Position = new Vector3(-2f, 0f, 2f) },
-            new UpgradeDef { Id = "ChefCapacity", Name = "Chef Capacity", Cost = 350, Position = new Vector3(5f, 0f, 8f) },
-            new UpgradeDef { Id = "DiningArea",  Name = "Dining Area",  Cost = 400, Position = new Vector3(-5f, 0f, -2f) },
-            new UpgradeDef { Id = "MoreTables",  Name = "More Tables",  Cost = 600, Position = new Vector3(-5f, 0f, -5f) },
-            new UpgradeDef { Id = "HireCleaner", Name = "Hire Cleaner", Cost = 700, Position = new Vector3(2f, 0f, -3f) },
+            new UpgradeDef { Id = "SecondOven",   Name = "Second Oven",   Position = new Vector3(-6f, 0f, 5.8f) },
+            new UpgradeDef { Id = "BiggerStack",  Name = "Bigger Stack",  Position = new Vector3(3f, 0f, 2f) },
+            new UpgradeDef { Id = "FasterOven",   Name = "Faster Oven",   Position = new Vector3(-4f, 0f, 4f) },
+            new UpgradeDef { Id = "HireCashier",  Name = "Hire Cashier",  Position = new Vector3(3f, 0f, 8f) },
+            new UpgradeDef { Id = "HireChef",     Name = "Hire Chef",     Position = new Vector3(5f, 0f, 5f) },
+            new UpgradeDef { Id = "ChefSpeed",    Name = "Chef Speed",    Position = new Vector3(-2f, 0f, 2f) },
+            new UpgradeDef { Id = "ChefCapacity", Name = "Chef Capacity", Position = new Vector3(5f, 0f, 8f) },
+            new UpgradeDef { Id = "DiningArea",  Name = "Dining Area",  Position = new Vector3(-5f, 0f, -2f) },
+            new UpgradeDef { Id = "MoreTables",  Name = "More Tables",  Position = new Vector3(-5f, 0f, -5f) },
+            new UpgradeDef { Id = "HireCleaner", Name = "Hire Cleaner", Position = new Vector3(2f, 0f, -3f) },
             // ── Expansion ──
-            new UpgradeDef { Id = "ExpandShop",        Name = "Expand Shop",     Cost = 1000, Position = new Vector3(6f, 0f, 0f) },
-            new UpgradeDef { Id = "DriveThruWindow",   Name = "Drive-Thru",      Cost = 1200, Position = new Vector3(14f, 0f, 5f) },
-            new UpgradeDef { Id = "ThirdOven",         Name = "Third Oven",      Cost = 1500, Position = new Vector3(14f, 0f, 3f) },
-            new UpgradeDef { Id = "HireDTWorker",      Name = "Hire DT Worker",  Cost = 1800, Position = new Vector3(14f, 0f, 0f) },
+            new UpgradeDef { Id = "ExpandShop",        Name = "Expand Shop",     Position = new Vector3(6f, 0f, 0f) },
+            new UpgradeDef { Id = "DriveThruWindow",   Name = "Drive-Thru",      Position = new Vector3(14f, 0f, 5f) },
+            new UpgradeDef { Id = "ThirdOven",         Name = "Third Oven",      Position = new Vector3(14f, 0f, 3f) },
+            new UpgradeDef { Id = "HireDTWorker",      Name = "Hire DT Worker",  Position = new Vector3(14f, 0f, 0f) },
         };
 
         private int _nextIndex;
         private UpgradeZone _activeZone;
         private bool _isLivePurchase;
+        private UI.ProgressUI _progressUI;
 
         /// <summary>Number of fully purchased upgrades (sequential).</summary>
         public int PurchasedCount => _nextIndex;
@@ -54,9 +54,20 @@ namespace ShopIdle.Upgrades
 
         private void Start()
         {
+            CreateProgressUI();
             ApplyPurchasedUpgrades();
             ShowNextZone();
             RestorePartialPayment();
+        }
+
+        private void CreateProgressUI()
+        {
+            var rm = Core.RestaurantManager.Instance;
+            string name = rm != null ? rm.CurrentConfig.restaurantName : "Pizza Palace";
+
+            var uiObj = new GameObject("ProgressUI");
+            _progressUI = uiObj.AddComponent<UI.ProgressUI>();
+            _progressUI.Init(name, AllUpgrades.Length);
         }
 
         private void ApplyPurchasedUpgrades()
@@ -73,6 +84,9 @@ namespace ShopIdle.Upgrades
                 ApplyUpgrade(AllUpgrades[i].Id);
                 _nextIndex = i + 1;
             }
+
+            if (_progressUI != null)
+                _progressUI.UpdateProgress(_nextIndex);
         }
 
         private void RestorePartialPayment()
@@ -85,17 +99,48 @@ namespace ShopIdle.Upgrades
                 _activeZone.SetPartialSpent(partial);
         }
 
+        private int GetCostForIndex(int index)
+        {
+            var rm = Core.RestaurantManager.Instance;
+            if (rm != null)
+                return rm.GetUpgradeCost(index);
+            // Fallback to base costs
+            int[] baseCosts = { 50, 80, 120, 200, 250, 300, 350, 400, 600, 700, 1000, 1200, 1500, 1800 };
+            return index < baseCosts.Length ? baseCosts[index] : 9999;
+        }
+
         private void ShowNextZone()
         {
-            if (_nextIndex >= AllUpgrades.Length) return;
+            if (_nextIndex >= AllUpgrades.Length)
+            {
+                // All upgrades purchased — show NEXT RESTAURANT zone
+                ShowNextRestaurantZone();
+                return;
+            }
 
             var def = AllUpgrades[_nextIndex];
+            int cost = GetCostForIndex(_nextIndex);
+
             var zoneObj = new GameObject($"UpgradeZone_{def.Id}");
             zoneObj.transform.position = def.Position;
 
             _activeZone = zoneObj.AddComponent<UpgradeZone>();
-            _activeZone.Init(def.Name, def.Cost);
+            _activeZone.Init(def.Name, cost);
             _activeZone.OnPurchased += OnZonePurchased;
+        }
+
+        private void ShowNextRestaurantZone()
+        {
+            var rm = Core.RestaurantManager.Instance;
+            if (rm == null) return;
+
+            int cost = rm.GetNextRestaurantCost();
+            var zoneObj = new GameObject("UpgradeZone_NextRestaurant");
+            zoneObj.transform.position = new Vector3(0f, 0f, 3f);
+
+            _activeZone = zoneObj.AddComponent<UpgradeZone>();
+            _activeZone.Init("NEXT RESTAURANT", cost, isNextRestaurant: true);
+            _activeZone.OnPurchased += OnNextRestaurantPurchased;
         }
 
         private void OnZonePurchased()
@@ -109,7 +154,18 @@ namespace ShopIdle.Upgrades
             _nextIndex++;
             _activeZone = null;
 
+            if (_progressUI != null)
+                _progressUI.UpdateProgress(_nextIndex);
+
             Invoke(nameof(ShowNextZone), 0.5f);
+        }
+
+        private void OnNextRestaurantPurchased()
+        {
+            _activeZone = null;
+            var rm = Core.RestaurantManager.Instance;
+            if (rm != null)
+                rm.StartNextRestaurant();
         }
 
         private void ApplyUpgrade(string id)
@@ -150,9 +206,12 @@ namespace ShopIdle.Upgrades
             oven.transform.position = new Vector3(-6f, 0.5f, 7f);
             oven.transform.localScale = firstOven.transform.localScale;
 
-            var renderer = firstOven.GetComponent<MeshRenderer>();
-            if (renderer != null)
-                oven.GetComponent<MeshRenderer>().material = renderer.material;
+            // Use restaurant oven color
+            var rm = Core.RestaurantManager.Instance;
+            var ovenColor = rm != null ? rm.CurrentConfig.ovenColor : new Color(0.5f, 0.15f, 0.1f);
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.color = ovenColor;
+            oven.GetComponent<MeshRenderer>().material = mat;
 
             oven.GetComponent<BoxCollider>().isTrigger = true;
 
@@ -424,17 +483,14 @@ namespace ShopIdle.Upgrades
 
         private IEnumerator ExpandShopSequence(GameObject wall)
         {
-            // Wall sinks with a pop
             float duration = 0.4f;
             float t = 0f;
             Vector3 startScale = wall.transform.localScale;
             Vector3 startPos = wall.transform.position;
 
-            // Quick scale-up pop
             wall.transform.localScale = startScale * 1.15f;
             yield return new WaitForSeconds(0.1f);
 
-            // Sink down
             while (t < duration)
             {
                 t += Time.deltaTime;
@@ -451,7 +507,6 @@ namespace ShopIdle.Upgrades
             CreateExpansionArea();
             RebakeNavMesh();
 
-            // Big camera shake for expansion
             Core.JuiceManager.Instance?.ShakeCamera(0.5f);
             Core.AudioManager.Instance?.Play(Core.SoundType.Fanfare);
 
@@ -462,13 +517,14 @@ namespace ShopIdle.Upgrades
         {
             if (GameObject.Find("ExpansionFloor") != null) return;
 
-            // New floor (plane default is 10x10)
+            var rm = Core.RestaurantManager.Instance;
+            var wallColor = rm != null ? rm.CurrentConfig.wallColor : new Color(0.85f, 0.82f, 0.75f);
+
             var floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
             floor.name = "ExpansionFloor";
             floor.transform.position = new Vector3(14f, 0f, 0f);
             floor.transform.localScale = new Vector3(1.2f, 1f, 2f);
 
-            // Match existing floor material
             var origFloor = GameObject.Find("Floor");
             if (origFloor != null)
             {
@@ -476,17 +532,13 @@ namespace ShopIdle.Upgrades
                 floor.GetComponent<MeshRenderer>().material = origMat;
             }
 
-            // New right wall (with gap for drive-thru at Z=4 to Z=7)
             CreateExpansionWall("ExpWallRight_Upper", new Vector3(20f, 1.5f, 8.5f),
-                new Vector3(0.3f, 3f, 3f));
+                new Vector3(0.3f, 3f, 3f), wallColor);
             CreateExpansionWall("ExpWallRight_Lower", new Vector3(20f, 1.5f, -3f),
-                new Vector3(0.3f, 3f, 14f));
-
-            // Back wall extension
+                new Vector3(0.3f, 3f, 14f), wallColor);
             CreateExpansionWall("ExpWallBack", new Vector3(14f, 1.5f, 10f),
-                new Vector3(12f, 3f, 0.3f));
+                new Vector3(12f, 3f, 0.3f), wallColor);
 
-            // Road outside (dark gray quad)
             var road = GameObject.CreatePrimitive(PrimitiveType.Quad);
             road.name = "Road";
             road.transform.position = new Vector3(21.5f, 0.02f, 0f);
@@ -498,7 +550,6 @@ namespace ShopIdle.Upgrades
             roadMat.color = new Color(0.25f, 0.25f, 0.25f);
             road.GetComponent<MeshRenderer>().material = roadMat;
 
-            // Road center line (yellow dashed)
             var line = GameObject.CreatePrimitive(PrimitiveType.Quad);
             line.name = "RoadLine";
             line.transform.position = new Vector3(21.5f, 0.025f, 0f);
@@ -510,7 +561,6 @@ namespace ShopIdle.Upgrades
             lineMat.color = new Color(0.95f, 0.85f, 0.15f);
             line.GetComponent<MeshRenderer>().material = lineMat;
 
-            // Window counter visual (small shelf at the gap)
             var shelf = GameObject.CreatePrimitive(PrimitiveType.Cube);
             shelf.name = "DriveThruShelf";
             shelf.transform.position = new Vector3(19.8f, 0.7f, 5.5f);
@@ -522,7 +572,7 @@ namespace ShopIdle.Upgrades
             shelf.GetComponent<MeshRenderer>().material = shelfMat;
         }
 
-        private void CreateExpansionWall(string name, Vector3 position, Vector3 scale)
+        private void CreateExpansionWall(string name, Vector3 position, Vector3 scale, Color color)
         {
             if (GameObject.Find(name) != null) return;
 
@@ -532,12 +582,9 @@ namespace ShopIdle.Upgrades
             wall.transform.localScale = scale;
             wall.isStatic = true;
 
-            var origWall = GameObject.Find("WallLeft");
-            if (origWall != null)
-            {
-                var mat = origWall.GetComponent<MeshRenderer>().material;
-                wall.GetComponent<MeshRenderer>().material = mat;
-            }
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.color = color;
+            wall.GetComponent<MeshRenderer>().material = mat;
         }
 
         private void RebakeNavMesh()
@@ -555,7 +602,6 @@ namespace ShopIdle.Upgrades
             windowObj.transform.position = new Vector3(19f, 0f, 5.5f);
             windowObj.AddComponent<DriveThru.DriveThruWindow>();
 
-            // Floor marker for serve point
             var marker = GameObject.CreatePrimitive(PrimitiveType.Quad);
             marker.name = "DTWindowMarker";
             marker.transform.position = new Vector3(19f, 0.02f, 5.5f);
@@ -588,9 +634,11 @@ namespace ShopIdle.Upgrades
             oven.transform.position = new Vector3(14f, 0.5f, 7f);
             oven.transform.localScale = firstOven.transform.localScale;
 
-            var renderer = firstOven.GetComponent<MeshRenderer>();
-            if (renderer != null)
-                oven.GetComponent<MeshRenderer>().material = renderer.material;
+            var rm = Core.RestaurantManager.Instance;
+            var ovenColor = rm != null ? rm.CurrentConfig.ovenColor : new Color(0.5f, 0.15f, 0.1f);
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.color = ovenColor;
+            oven.GetComponent<MeshRenderer>().material = mat;
 
             oven.GetComponent<BoxCollider>().isTrigger = true;
 
@@ -608,8 +656,6 @@ namespace ShopIdle.Upgrades
                 ovenComp.SetPizzaPrefab(firstComp.PizzaPrefab);
 
             CreateOvenMarker(oven.transform.position);
-
-            // Rebake NavMesh so workers can reach new oven
             RebakeNavMesh();
         }
 
@@ -623,10 +669,9 @@ namespace ShopIdle.Upgrades
             Object.Destroy(worker.GetComponent<CapsuleCollider>());
 
             var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = new Color(0.9f, 0.45f, 0.9f); // purple/pink
+            mat.color = new Color(0.9f, 0.45f, 0.9f);
             worker.GetComponent<MeshRenderer>().material = mat;
 
-            // Small delivery cap
             var cap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             cap.name = "DTCap";
             cap.transform.SetParent(worker.transform);
@@ -663,7 +708,6 @@ namespace ShopIdle.Upgrades
             scaler.referenceResolution = new Vector2(1080f, 1920f);
             scaler.matchWidthOrHeight = 0.5f;
 
-            // Background
             var bgObj = new GameObject("BannerBG");
             bgObj.transform.SetParent(canvasObj.transform, false);
             var bgRect = bgObj.AddComponent<RectTransform>();
@@ -674,7 +718,6 @@ namespace ShopIdle.Upgrades
             var bgImage = bgObj.AddComponent<UnityEngine.UI.Image>();
             bgImage.color = new Color(0.08f, 0.08f, 0.15f, 0.85f);
 
-            // Text
             var textObj = new GameObject("BannerText");
             textObj.transform.SetParent(canvasObj.transform, false);
             var textRect = textObj.AddComponent<RectTransform>();
@@ -690,7 +733,6 @@ namespace ShopIdle.Upgrades
             tmp.color = new Color(1f, 0.85f, 0.1f);
             tmp.fontStyle = FontStyles.Bold;
 
-            // Scale punch
             canvasObj.transform.localScale = Vector3.one * 0.5f;
             float punch = 0f;
             while (punch < 0.2f)
@@ -704,7 +746,6 @@ namespace ShopIdle.Upgrades
 
             yield return new WaitForSeconds(2f);
 
-            // Fade out
             float fade = 0f;
             while (fade < 0.5f)
             {

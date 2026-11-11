@@ -28,12 +28,17 @@ namespace ShopIdle.Upgrades
 
         private static readonly Color ZoneColor = new Color(0.6f, 0.3f, 1f, 0.5f);
         private static readonly Color OutlineColor = new Color(0.6f, 0.3f, 1f, 0.18f);
+        private static readonly Color GoldZoneColor = new Color(1f, 0.75f, 0.1f, 0.6f);
+        private static readonly Color GoldOutlineColor = new Color(1f, 0.75f, 0.1f, 0.2f);
         private const float ZoneSize = 2.5f;
 
-        public void Init(string displayName, int cost)
+        private bool _isNextRestaurant;
+
+        public void Init(string displayName, int cost, bool isNextRestaurant = false)
         {
             _totalCost = cost;
             _remaining = cost;
+            _isNextRestaurant = isNextRestaurant;
             BuildVisuals(displayName);
         }
 
@@ -54,17 +59,20 @@ namespace ShopIdle.Upgrades
             _outlineQuad.transform.localScale = new Vector3(ZoneSize + 0.5f, ZoneSize + 0.5f, 1f);
             _outlineQuad.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             Object.Destroy(_outlineQuad.GetComponent<MeshCollider>());
-            _outlineQuad.GetComponent<MeshRenderer>().material = CreateTransparentMat(OutlineColor);
+            var outColor = _isNextRestaurant ? GoldOutlineColor : OutlineColor;
+            _outlineQuad.GetComponent<MeshRenderer>().material = CreateTransparentMat(outColor);
 
             // Fill quad
             _fillQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
             _fillQuad.name = "Fill";
             _fillQuad.transform.SetParent(transform);
             _fillQuad.transform.localPosition = new Vector3(0f, 0.02f, 0f);
-            _fillQuad.transform.localScale = new Vector3(ZoneSize, ZoneSize, 1f);
+            float size = _isNextRestaurant ? ZoneSize + 0.5f : ZoneSize;
+            _fillQuad.transform.localScale = new Vector3(size, size, 1f);
             _fillQuad.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             Object.Destroy(_fillQuad.GetComponent<MeshCollider>());
-            _fillQuad.GetComponent<MeshRenderer>().material = CreateTransparentMat(ZoneColor);
+            var fillColor = _isNextRestaurant ? GoldZoneColor : ZoneColor;
+            _fillQuad.GetComponent<MeshRenderer>().material = CreateTransparentMat(fillColor);
 
             // Trigger collider
             var col = gameObject.AddComponent<BoxCollider>();

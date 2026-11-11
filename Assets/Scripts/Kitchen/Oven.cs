@@ -64,9 +64,11 @@ namespace ShopIdle.Kitchen
 
         private void SpawnPizzaOnTray()
         {
-            if (_pizzaPrefab == null) return;
-
-            GameObject pizza = Instantiate(_pizzaPrefab);
+            // Prefer config-driven food visual; fall back to prefab
+            GameObject pizza = Core.RestaurantManager.CreateFoodVisual();
+            if (pizza == null && _pizzaPrefab != null)
+                pizza = Instantiate(_pizzaPrefab);
+            if (pizza == null) return;
             Transform t = pizza.transform;
             Transform anchor = _trayAnchor != null ? _trayAnchor : transform;
             t.SetParent(anchor);

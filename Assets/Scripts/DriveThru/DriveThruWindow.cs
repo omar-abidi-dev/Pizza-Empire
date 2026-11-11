@@ -10,7 +10,15 @@ namespace ShopIdle.DriveThru
 
         private const float SpawnInterval = 6f;
         private const int MaxCars = 3;
-        private const int MoneyPerPizza = 15;
+        private const int DefaultMoneyPerPizza = 15;
+        private static int MoneyPerItem
+        {
+            get
+            {
+                var rm = Core.RestaurantManager.Instance;
+                return rm != null ? rm.CurrentConfig.driveThruMoneyPerItem : DefaultMoneyPerPizza;
+            }
+        }
         private const float CarSpeed = 4f;
         private const float ServeInterval = 0.4f;
         private const float DepositInterval = 0.12f;
@@ -166,7 +174,7 @@ namespace ShopIdle.DriveThru
             {
                 car.Served = true;
                 if (car.Bubble != null) car.Bubble.SetActive(false);
-                int earned = car.PizzasWanted * MoneyPerPizza;
+                int earned = car.PizzasWanted * MoneyPerItem;
                 if (_moneySpot != null && earned > 0)
                     _moneySpot.SpawnBills(earned);
             }
@@ -174,14 +182,14 @@ namespace ShopIdle.DriveThru
 
         private void FlyPizzaToCar(Car car)
         {
-            var obj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            obj.transform.localScale = new Vector3(0.4f, 0.05f, 0.4f);
+            var obj = Core.RestaurantManager.CreateFoodVisual();
+            if (obj == null)
+            {
+                obj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                obj.transform.localScale = new Vector3(0.4f, 0.05f, 0.4f);
+                Object.Destroy(obj.GetComponent<CapsuleCollider>());
+            }
             obj.transform.position = transform.position + Vector3.up;
-            Object.Destroy(obj.GetComponent<CapsuleCollider>());
-
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = new Color(1f, 0.85f, 0.2f);
-            obj.GetComponent<MeshRenderer>().material = mat;
 
             Vector3 end = car.Obj.transform.position + Vector3.up;
             var fly = obj.AddComponent<Kitchen.PizzaFly>();

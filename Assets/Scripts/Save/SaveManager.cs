@@ -30,6 +30,13 @@ namespace ShopIdle.Save
 
             _filePath = Path.Combine(Application.persistentDataPath, "save.json");
             Load();
+
+            // Ensure RestaurantManager exists (persists across scene reloads)
+            if (Core.RestaurantManager.Instance == null)
+            {
+                var rmObj = new GameObject("RestaurantManager");
+                rmObj.AddComponent<Core.RestaurantManager>();
+            }
         }
 
         private void Start()
@@ -113,7 +120,13 @@ namespace ShopIdle.Save
 
             if (incomePerMinute <= 0) return 0;
 
-            return Mathf.RoundToInt(incomePerMinute * minutes);
+            // Scale by restaurant economy (higher restaurants earn more)
+            var rm = Core.RestaurantManager.Instance;
+            float economyScale = rm != null && rm.CurrentConfig != null
+                ? rm.CurrentConfig.moneyPerItem / 10f
+                : 1f;
+
+            return Mathf.RoundToInt(incomePerMinute * minutes * economyScale);
         }
 
         private void GatherState()
@@ -140,6 +153,11 @@ namespace ShopIdle.Save
                 _data.playerY = pos.y;
                 _data.playerZ = pos.z;
             }
+
+            // Restaurant index
+            var rm = Core.RestaurantManager.Instance;
+            if (rm != null)
+                _data.restaurantIndex = rm.RestaurantIndex;
         }
 
         public void DeleteSave()

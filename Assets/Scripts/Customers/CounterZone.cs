@@ -9,6 +9,15 @@ namespace ShopIdle.Customers
         [SerializeField] private float _flyDuration = 0.3f;
         [SerializeField] private int _moneyPerPizza = 10;
 
+        private int MoneyPerItem
+        {
+            get
+            {
+                var rm = Core.RestaurantManager.Instance;
+                return rm != null ? rm.CurrentConfig.moneyPerItem : _moneyPerPizza;
+            }
+        }
+
         [Header("References")]
         [SerializeField] private CustomerQueue _queue;
         [SerializeField] private CustomerSpawner _spawner;
@@ -91,14 +100,14 @@ namespace ShopIdle.Customers
 
         private void FlyPizzaToCustomer(Customer customer)
         {
-            var pizzaObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            pizzaObj.transform.localScale = new Vector3(0.4f, 0.05f, 0.4f);
+            var pizzaObj = Core.RestaurantManager.CreateFoodVisual();
+            if (pizzaObj == null)
+            {
+                pizzaObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                pizzaObj.transform.localScale = new Vector3(0.4f, 0.05f, 0.4f);
+                Destroy(pizzaObj.GetComponent<CapsuleCollider>());
+            }
             pizzaObj.transform.position = transform.position + Vector3.up;
-
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = new Color(1f, 0.85f, 0.2f);
-            pizzaObj.GetComponent<MeshRenderer>().material = mat;
-            Destroy(pizzaObj.GetComponent<CapsuleCollider>());
 
             Vector3 endPos = customer.transform.position + Vector3.up * 1.2f;
             var fly = pizzaObj.AddComponent<Kitchen.PizzaFly>();
@@ -108,7 +117,7 @@ namespace ShopIdle.Customers
             });
 
             customer.ReceivePizza();
-            _currentOrderTotal += _moneyPerPizza;
+            _currentOrderTotal += MoneyPerItem;
 
             if (customer.IsFullyServed)
                 CompleteOrder(customer);
@@ -129,7 +138,7 @@ namespace ShopIdle.Customers
             });
 
             customer.ReceivePizza();
-            _currentOrderTotal += _moneyPerPizza;
+            _currentOrderTotal += MoneyPerItem;
 
             if (customer.IsFullyServed)
                 CompleteOrder(customer);
