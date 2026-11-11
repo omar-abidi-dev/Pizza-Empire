@@ -372,14 +372,23 @@ namespace ShopIdle.Core
             var claimLabel = new GameObject("Label");
             claimLabel.transform.SetParent(claimObj.transform, false);
             var claimLabelRect = claimLabel.AddComponent<RectTransform>();
-            claimLabelRect.anchorMin = Vector2.zero;
+            claimLabelRect.anchorMin = new Vector2(0.42f, 0f);
             claimLabelRect.anchorMax = Vector2.one;
             claimLabelRect.offsetMin = Vector2.zero;
             claimLabelRect.offsetMax = Vector2.zero;
             var claimTmp = claimLabel.AddComponent<TextMeshProUGUI>();
-            claimTmp.text = $"◆{q.gemReward}";
+            claimTmp.text = $"{q.gemReward}";
             claimTmp.fontSize = 20;
-            claimTmp.alignment = TextAlignmentOptions.Center;
+            claimTmp.alignment = TextAlignmentOptions.MidlineLeft;
+
+            var claimIcon = new GameObject("GemIcon");
+            claimIcon.transform.SetParent(claimObj.transform, false);
+            var claimIconRect = claimIcon.AddComponent<RectTransform>();
+            claimIconRect.anchorMin = new Vector2(0.08f, 0.15f);
+            claimIconRect.anchorMax = new Vector2(0.38f, 0.85f);
+            claimIconRect.offsetMin = Vector2.zero;
+            claimIconRect.offsetMax = Vector2.zero;
+            ShopIdle.UI.GemSprite.AddTo(claimIcon);
             claimTmp.color = Color.white;
             claimTmp.fontStyle = FontStyles.Bold;
 

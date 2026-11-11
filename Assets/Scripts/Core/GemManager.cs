@@ -71,18 +71,15 @@ namespace ShopIdle.Core
             var bg = container.AddComponent<Image>();
             bg.color = new Color(0.25f, 0.1f, 0.4f, 0.7f);
 
-            // Gem icon (diamond shape text)
+            // Gem icon (procedural sprite)
             var iconObj = new GameObject("GemIcon");
             iconObj.transform.SetParent(container.transform, false);
             var iconRect = iconObj.AddComponent<RectTransform>();
-            iconRect.anchorMin = new Vector2(0f, 0f);
-            iconRect.anchorMax = new Vector2(0.3f, 1f);
+            iconRect.anchorMin = new Vector2(0f, 0.1f);
+            iconRect.anchorMax = new Vector2(0.3f, 0.9f);
             iconRect.offsetMin = Vector2.zero;
             iconRect.offsetMax = Vector2.zero;
-            var iconTmp = iconObj.AddComponent<TextMeshProUGUI>();
-            iconTmp.text = "<color=#BB66FF>◆</color>";
-            iconTmp.fontSize = 22;
-            iconTmp.alignment = TextAlignmentOptions.Center;
+            ShopIdle.UI.GemSprite.AddTo(iconObj);
 
             // Count text
             var textObj = new GameObject("GemCount");
