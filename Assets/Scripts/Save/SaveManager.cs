@@ -41,6 +41,9 @@ namespace ShopIdle.Save
 
         private void Start()
         {
+            // Title screen first
+            EnsureManager<UI.TitleScreen>("TitleScreen");
+
             // Bootstrap new managers
             EnsureManager<Core.PrestigeManager>("PrestigeManager");
             EnsureManager<Core.GemManager>("GemManager");
