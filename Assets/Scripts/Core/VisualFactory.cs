@@ -153,6 +153,17 @@ namespace ShopIdle.Core
             var p = ColorPalette.Instance;
             ClearChildren(root);
 
+            // Restaurant-specific cooking station model (grill / sushi counter / taco cart).
+            // Cook side faces +Z like the oven door; null for pizza and procedural restaurants.
+            var rm = RestaurantManager.Instance;
+            var station = PropModels.Instance != null && rm != null
+                ? PropModels.Instance.StationFor(rm.RestaurantIndex) : null;
+            if (station != null)
+            {
+                SpawnModel(station, root, "StationModel", 0f);
+                return;
+            }
+
             // Main body
             CreateChild(root, "OvenBody", PrimitiveType.Cube,
                 new Vector3(0f, 0.45f, 0f), new Vector3(1.4f, 0.9f, 1.0f), p.ovenBody);
