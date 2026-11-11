@@ -39,9 +39,9 @@ public static class BakeScene
         AdjustLayout();
         CreateFloorMarkers();
         AdjustCamera();
-        AddWalls();
+        // Walls are built at runtime around the owned plots (PlotWalls).
         WireReferences();
-        CreateUpgradeManager();
+        CreatePlotManager();
         CreateSaveManager();
         CreateJuiceManagers();
         SetupNavMesh();
@@ -571,15 +571,15 @@ public static class BakeScene
     }
 
     // ────────────────────────────────────────────
-    // UpgradeManager
+    // PlotManager (endless plot map; owns the NavMeshSurface)
     // ────────────────────────────────────────────
-    private static void CreateUpgradeManager()
+    private static void CreatePlotManager()
     {
-        if (FindInScene("UpgradeManager") != null) return;
+        if (FindInScene("PlotManager") != null) return;
 
-        var obj = new GameObject("UpgradeManager");
-        Undo.RegisterCreatedObjectUndo(obj, "Create UpgradeManager");
-        obj.AddComponent<ShopIdle.Upgrades.UpgradeManager>();
+        var obj = new GameObject("PlotManager");
+        Undo.RegisterCreatedObjectUndo(obj, "Create PlotManager");
+        obj.AddComponent<ShopIdle.Plots.PlotManager>();
     }
 
     // ────────────────────────────────────────────

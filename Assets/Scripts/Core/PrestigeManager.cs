@@ -52,6 +52,7 @@ namespace ShopIdle.Core
                 sm.Data.restaurantIndex = 0;
                 sm.Data.restaurantsCompleted = 0;
                 sm.Data.purchasedUpgradeCount = 0;
+                sm.Data.plots.Clear();
                 sm.Data.activeZonePartialSpent = 0;
                 sm.Data.money = 0;
                 sm.Data.playerX = 0f;

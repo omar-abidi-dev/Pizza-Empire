@@ -9,20 +9,22 @@ namespace ShopIdle.DriveThru
         public static DriveThruWindow Instance { get; private set; }
 
         private const float SpawnInterval = 6f;
-        private const int MaxCars = 3;
-        private const int DefaultMoneyPerPizza = 15;
+        private const int MaxCars = 2;
+        /// <summary>Drive-thru pays 1.5x the menu average.</summary>
         private static int MoneyPerItem
         {
             get
             {
-                var rm = Core.RestaurantManager.Instance;
-                return rm != null ? rm.CurrentConfig.driveThruMoneyPerItem : DefaultMoneyPerPizza;
+                int sum = 0;
+                for (int t = 0; t < Kitchen.Menu.Count; t++) sum += Kitchen.FoodCatalog.Price(t);
+                return Mathf.RoundToInt(1.5f * sum / Kitchen.Menu.Count);
             }
         }
         private const float CarSpeed = 4f;
         private const float ServeInterval = 0.4f;
         private const float DepositInterval = 0.12f;
-        private const float QueueSpacing = 3.5f;
+        private const float QueueSpacing = 3.2f;
+        private const float LaneHalfLength = 4f; // cars enter/leave at the plot edges
 
         private class Car
         {
@@ -67,8 +69,8 @@ namespace ShopIdle.DriveThru
             Instance = this;
             _roadX = transform.position.x + 2f;
             _windowZ = transform.position.z;
-            _spawnZ = _windowZ + 16f;
-            _exitZ = _windowZ - 16f;
+            _spawnZ = _windowZ + LaneHalfLength + 2.5f;
+            _exitZ = _windowZ - LaneHalfLength + 1.5f;
         }
 
         private void Start()
@@ -198,13 +200,7 @@ namespace ShopIdle.DriveThru
 
         private void FlyPizzaToCar(Car car)
         {
-            var obj = Core.RestaurantManager.CreateFoodVisual();
-            if (obj == null)
-            {
-                obj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                obj.transform.localScale = new Vector3(0.4f, 0.05f, 0.4f);
-                Object.Destroy(obj.GetComponent<CapsuleCollider>());
-            }
+            var obj = Kitchen.FoodCatalog.Create(Kitchen.Menu.RandomType());
             obj.transform.position = transform.position + Vector3.up;
 
             Vector3 end = car.Obj.transform.position + Vector3.up;

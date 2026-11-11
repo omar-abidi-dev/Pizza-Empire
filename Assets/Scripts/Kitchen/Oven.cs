@@ -11,8 +11,7 @@ namespace ShopIdle.Kitchen
 
         [Header("Tray Layout")]
         [SerializeField] private Transform _trayAnchor;
-        [SerializeField] private float _pizzaHeight = 0.15f; // fallback when no RestaurantManager
-        [SerializeField] private float _trayBaseHeight = 1.1f;
+                [SerializeField] private float _trayBaseHeight = 1.1f;
 
         [Header("Pickup")]
         [SerializeField] private float _pickupInterval = 0.15f;
@@ -21,15 +20,20 @@ namespace ShopIdle.Kitchen
         [Header("Pizza Prefab")]
         [SerializeField] private GameObject _pizzaPrefab;
 
+        [Header("Food")]
+        [SerializeField] private int _foodType;
+
         public GameObject PizzaPrefab => _pizzaPrefab;
-        private float StackStep => Core.RestaurantManager.Instance != null
-            ? Core.RestaurantManager.FoodStackHeight : _pizzaHeight;
+        public int FoodType => _foodType;
+        private float StackStep => FoodCatalog.StackHeight(_foodType);
+        private int Capacity => FoodCatalog.TrayCapacity(_foodType, _maxTrayCapacity);
         public float ProduceInterval => _produceInterval;
         public int TrayCount => _trayPizzas.Count;
 
         public void SetPizzaPrefab(GameObject prefab) { _pizzaPrefab = prefab; }
         public void SetTrayAnchor(Transform anchor) { _trayAnchor = anchor; }
         public void SetProduceInterval(float interval) { _produceInterval = interval; }
+        public void SetFoodType(int type) { _foodType = type; }
 
         /// <summary>Move the tray anchor so the first item rests on a surface at <paramref name="surfaceWorldY"/>.</summary>
         public void AlignTraySurface(float surfaceWorldY)
@@ -67,7 +71,7 @@ namespace ShopIdle.Kitchen
 
         private void ProducePizzas()
         {
-            if (_trayPizzas.Count >= _maxTrayCapacity) return;
+            if (_trayPizzas.Count >= Capacity) return;
 
             _produceTimer += Time.deltaTime;
             if (_produceTimer < _produceInterval) return;
@@ -78,8 +82,7 @@ namespace ShopIdle.Kitchen
 
         private void SpawnPizzaOnTray()
         {
-            // Prefer config-driven food visual; fall back to prefab
-            GameObject pizza = Core.RestaurantManager.CreateFoodVisual();
+            GameObject pizza = FoodCatalog.Create(_foodType);
             if (pizza == null && _pizzaPrefab != null)
                 pizza = Instantiate(_pizzaPrefab);
             if (pizza == null) return;

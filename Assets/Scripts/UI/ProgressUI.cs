@@ -5,30 +5,41 @@ using TMPro;
 namespace ShopIdle.UI
 {
     /// <summary>
-    /// Restaurant progress bar displayed below the money counter.
-    /// Shows restaurant name, upgrade completion, and prestige info.
+    /// Restaurant progress bar displayed below the money counter: fills as plots are bought
+    /// towards the next menu milestone (a new food type).
     /// </summary>
     public class ProgressUI : MonoBehaviour
     {
         private Image _fillBar;
         private TextMeshProUGUI _progressText;
         private TextMeshProUGUI _nameText;
-        private int _total;
+        private string _restaurantName;
 
-        public void Init(string restaurantName, int totalUpgrades)
+        public void Init(string restaurantName)
         {
-            _total = totalUpgrades;
+            _restaurantName = restaurantName;
             BuildUI(restaurantName);
-            UpdateProgress(0);
         }
 
-        public void UpdateProgress(int completed)
+        /// <summary>Fill from the last menu milestone to the next one.</summary>
+        public void Show(int plotsOwned)
         {
-            float fill = _total > 0 ? (float)completed / _total : 0f;
+            int size = Kitchen.Menu.SizeFor(plotsOwned);
+            int prev = size == 1 ? 1 : Kitchen.Menu.MilestoneFor(size);
+            int next = Kitchen.Menu.MilestoneFor(size + 1);
             if (_fillBar != null)
-                _fillBar.fillAmount = fill;
+                _fillBar.fillAmount = Mathf.Clamp01((float)(plotsOwned - prev) / (next - prev));
             if (_progressText != null)
-                _progressText.text = $"{completed}/{_total}";
+                _progressText.text = $"{plotsOwned}/{next} plots - next: {Kitchen.FoodCatalog.Name(size)}";
+            if (_nameText != null)
+                _nameText.text = $"{_restaurantName}  <size=75%>Menu: {MenuList(size)}</size>";
+        }
+
+        private static string MenuList(int size)
+        {
+            var names = new string[size];
+            for (int t = 0; t < size; t++) names[t] = Kitchen.FoodCatalog.Name(t);
+            return string.Join(", ", names);
         }
 
         private void BuildUI(string restaurantName)
@@ -79,7 +90,7 @@ namespace ShopIdle.UI
             textRect.offsetMin = Vector2.zero;
             textRect.offsetMax = Vector2.zero;
             _progressText = textObj.AddComponent<TextMeshProUGUI>();
-            _progressText.text = "0/14";
+            _progressText.text = "";
             _progressText.fontSize = 18;
             _progressText.alignment = TextAlignmentOptions.Center;
             _progressText.color = Color.white;

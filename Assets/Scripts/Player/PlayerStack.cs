@@ -8,15 +8,11 @@ namespace ShopIdle.Player
     {
         [Header("Stack Settings")]
         [SerializeField] private int _maxCapacity = 5;
-        [SerializeField] private float _pizzaHeight = 0.15f; // fallback when no RestaurantManager
         [SerializeField] private float _stackBaseHeight = 1.2f;
 
         [Header("References")]
         [SerializeField] private Transform _stackAnchor;
         [SerializeField] private GameObject _maxLabel;
-
-        private float StackStep => Core.RestaurantManager.Instance != null
-            ? Core.RestaurantManager.FoodStackHeight : _pizzaHeight;
 
         private readonly List<Transform> _pizzas = new List<Transform>();
         private float _wobblePhase;
@@ -83,14 +79,30 @@ namespace ShopIdle.Player
             return true;
         }
 
-        public Transform RemoveTopPizza()
-        {
-            if (_pizzas.Count == 0) return null;
+        public Transform RemoveTopPizza() => RemoveAt(_pizzas.Count - 1);
 
-            int lastIndex = _pizzas.Count - 1;
-            Transform pizza = _pizzas[lastIndex];
-            _pizzas.RemoveAt(lastIndex);
+        /// <summary>Remove the highest item of <paramref name="type"/> (null if none is carried).</summary>
+        public Transform RemoveTopOfType(int type)
+        {
+            for (int i = _pizzas.Count - 1; i >= 0; i--)
+                if (Kitchen.FoodItem.TypeOf(_pizzas[i]) == type) return RemoveAt(i);
+            return null;
+        }
+
+        public int CountOfType(int type)
+        {
+            int n = 0;
+            foreach (var p in _pizzas) if (Kitchen.FoodItem.TypeOf(p) == type) n++;
+            return n;
+        }
+
+        private Transform RemoveAt(int index)
+        {
+            if (index < 0 || index >= _pizzas.Count) return null;
+            Transform pizza = _pizzas[index];
+            _pizzas.RemoveAt(index);
             pizza.SetParent(null);
+            for (int i = index; i < _pizzas.Count; i++) SnapPizzaToSlot(_pizzas[i], i);
 
             Core.AudioManager.Instance?.Play(Core.SoundType.PizzaDrop, 0.5f);
             return pizza;
@@ -99,14 +111,22 @@ namespace ShopIdle.Player
         public Vector3 GetNextSlotWorldPos()
         {
             Transform anchor = _stackAnchor != null ? _stackAnchor : transform;
-            float y = _stackBaseHeight + _pizzas.Count * StackStep;
+            float y = _stackBaseHeight + HeightBelow(_pizzas.Count);
             return anchor.position + Vector3.up * y;
+        }
+
+        /// <summary>Total height of the items under slot <paramref name="index"/> (mixed foods differ).</summary>
+        private float HeightBelow(int index)
+        {
+            float y = 0f;
+            for (int i = 0; i < index && i < _pizzas.Count; i++)
+                y += Kitchen.FoodCatalog.StackHeight(Kitchen.FoodItem.TypeOf(_pizzas[i]));
+            return y;
         }
 
         private void SnapPizzaToSlot(Transform pizza, int index)
         {
-            float y = index * StackStep;
-            pizza.localPosition = new Vector3(0f, y, 0f);
+            pizza.localPosition = new Vector3(0f, HeightBelow(index), 0f);
             pizza.localRotation = Quaternion.identity;
         }
     }

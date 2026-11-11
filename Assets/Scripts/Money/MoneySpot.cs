@@ -22,6 +22,8 @@ namespace ShopIdle.Money
         private const float CellX = 0.2f;
         private const float CellZ = 0.34f;
 
+        public void SetBillAnchor(Transform anchor) { _billAnchor = anchor; }
+
         public void SpawnBills(int totalMoney, int perBill = 10)
         {
             int count = Mathf.Max(1, totalMoney / perBill);

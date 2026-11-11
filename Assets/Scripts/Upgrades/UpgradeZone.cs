@@ -49,6 +49,16 @@ namespace ShopIdle.Upgrades
             UpdateLabel();
         }
 
+        /// <summary>Change the price, keeping what was already paid.</summary>
+        public void Reprice(int newCost)
+        {
+            if (_purchased) return;
+            int spent = _totalCost - _remaining;
+            _totalCost = newCost;
+            _remaining = Mathf.Max(1, newCost - spent);
+            UpdateLabel();
+        }
+
         private void BuildVisuals(string displayName)
         {
             // Outline ring (flattened cylinder for rounded look)

@@ -382,6 +382,7 @@ namespace ShopIdle.Core
                 sm.Data.restaurantsCompleted = _restaurantIndex + 1;
                 sm.Data.restaurantIndex = _restaurantIndex + 1;
                 sm.Data.purchasedUpgradeCount = 0;
+                sm.Data.plots.Clear();
                 sm.Data.activeZonePartialSpent = 0;
                 sm.Data.money = GetConfig(_restaurantIndex + 1).startingBonus;
                 sm.Data.playerX = 0f;

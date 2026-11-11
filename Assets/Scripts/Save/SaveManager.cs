@@ -123,28 +123,16 @@ namespace ShopIdle.Save
 
             float minutes = elapsed / 60f;
 
-            // Base rate: each worker type adds income per minute
-            int incomePerMinute = 0;
-            int upgrades = _data.purchasedUpgradeCount;
-
-            // Worker-based income (check which upgrades are purchased)
-            // Index 3 = HireCashier, 4 = HireChef, 9 = HireCleaner, 13 = HireDTWorker
-            if (upgrades > 3) incomePerMinute += 5;   // Cashier
-            if (upgrades > 4) incomePerMinute += 8;   // Chef
-            if (upgrades > 9) incomePerMinute += 4;   // Cleaner
-            if (upgrades > 13) incomePerMinute += 10;  // DT Worker
-
-            // Bonus for oven upgrades
-            if (upgrades > 0) incomePerMinute += 2;    // Second oven
-            if (upgrades > 12) incomePerMinute += 3;   // Third oven
+            // Base rate: every owned plot and every hired worker earns a little per minute
+            int workers = 0;
+            foreach (var plot in _data.plots)
+                if (plot.Kind == Plots.PlotKind.StaffRoom) workers++;
+            int incomePerMinute = 3 * _data.plots.Count + 6 * workers;
 
             if (incomePerMinute <= 0) return 0;
 
             // Scale by restaurant economy (higher restaurants earn more)
-            var rm = Core.RestaurantManager.Instance;
-            float economyScale = rm != null && rm.CurrentConfig != null
-                ? rm.CurrentConfig.moneyPerItem / 10f
-                : 1f;
+            float economyScale = 1f + 0.3f * (Kitchen.Menu.SizeFor(_data.plots.Count) - 1); // pricier menu items
 
             // Apply prestige multiplier
             var pm = Core.PrestigeManager.Instance;
@@ -160,13 +148,8 @@ namespace ShopIdle.Save
             if (mm != null)
                 _data.money = mm.TotalMoney;
 
-            // Upgrades
-            var um = FindAnyObjectByType<Upgrades.UpgradeManager>();
-            if (um != null)
-            {
-                _data.purchasedUpgradeCount = um.PurchasedCount;
-                _data.activeZonePartialSpent = um.ActiveZoneSpent;
-            }
+            // Plots (PlotManager edits _data.plots directly)
+            _data.purchasedUpgradeCount = _data.plots.Count;
 
             // Player position
             var player = GameObject.FindWithTag("Player");

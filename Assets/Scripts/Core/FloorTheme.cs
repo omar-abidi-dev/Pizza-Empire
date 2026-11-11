@@ -17,20 +17,49 @@ namespace ShopIdle.Core
 
         private static Texture2D _wood, _tiles, _grass, _road;
 
-        /// <summary>Planks on the main floor, kitchen tiles, grass texture and the front road.</summary>
+        public enum Surface { Wood, Tiles, Grass, Asphalt }
+
+        private static readonly System.Collections.Generic.Dictionary<Surface, Material> PlotMats = new();
+        private static Material _locked, _lane;
+
+        /// <summary>Kitchen tiles along the back of the starting plot (behind the counter line).</summary>
         public static void ApplyMainArea()
         {
-            var floor = GameObject.Find("Floor");
-            if (floor != null)
-            {
-                var r = floor.GetComponent<MeshRenderer>();
-                Vector3 size = r.bounds.size;
-                r.material = TexturedMaterial(WoodTexture(), size.x / PlankTextureMetres,
-                    size.z / PlankTextureMetres, 0.25f);
-            }
+            AddKitchenTiles("KitchenTiles", -3.9f, 3.9f);
+        }
 
-            AddKitchenTiles("KitchenTiles", -7.85f, 7.85f);
-            AddFrontRoad();
+        /// <summary>Shared material for an 8x8 m plot floor.</summary>
+        public static Material PlotMaterial(Surface surface)
+        {
+            if (PlotMats.TryGetValue(surface, out var m) && m != null) return m;
+            const float size = 8f;
+            m = surface switch
+            {
+                Surface.Tiles => TexturedMaterial(TileTexture(), size / TileTextureMetres, size / TileTextureMetres, 0.4f),
+                Surface.Grass => TexturedMaterial(GrassTexture(), size / 4f, size / 4f, 0.05f),
+                Surface.Asphalt => TexturedMaterial(AsphaltTexture(), 2f, 2f, 0.1f),
+                _ => TexturedMaterial(WoodTexture(), size / PlankTextureMetres, size / PlankTextureMetres, 0.25f)
+            };
+            PlotMats[surface] = m;
+            return m;
+        }
+
+        /// <summary>Faded see-through planks for plots that are not bought yet.</summary>
+        public static Material LockedMaterial()
+        {
+            if (_locked != null) return _locked;
+            _locked = ColorPalette.MakeTransparent(new Color(1f, 0.97f, 0.92f, 0.38f));
+            _locked.SetTexture("_BaseMap", WoodTexture());
+            _locked.SetTextureScale("_BaseMap", new Vector2(4f, 4f));
+            return _locked;
+        }
+
+        /// <summary>Road texture for an 8x3 m drive-thru lane (road runs along the quad's X axis).</summary>
+        public static Material LaneMaterial()
+        {
+            if (_lane != null) return _lane;
+            _lane = TexturedMaterial(RoadTexture(), 2.6f, 1f, 0.1f);
+            return _lane;
         }
 
         /// <summary>Tile strip over a kitchen zone between <paramref name="xMin"/> and <paramref name="xMax"/>.</summary>
@@ -50,15 +79,6 @@ namespace ShopIdle.Core
             var r = grass.GetComponent<MeshRenderer>();
             Vector3 size = r.bounds.size;
             r.material = TexturedMaterial(GrassTexture(), size.x / 4f, size.z / 4f, 0.05f);
-        }
-
-        private static void AddFrontRoad()
-        {
-            if (GameObject.Find("FrontRoad") != null) return;
-            const float length = 60f, width = 4f;
-            var road = CreateGroundQuad("FrontRoad", new Vector3(0f, -0.02f, -13f), length, width);
-            road.GetComponent<MeshRenderer>().material =
-                TexturedMaterial(RoadTexture(), length / width, 1f, 0.1f);
         }
 
         // ── Helpers ──
@@ -181,6 +201,26 @@ namespace ShopIdle.Core
                 }
             _road = Finish(NewTexture(size, size, "Road"), px);
             return _road;
+        }
+
+        private static Texture2D _asphalt;
+
+        private static Texture2D AsphaltTexture()
+        {
+            if (_asphalt != null) return _asphalt;
+            const int size = 64;
+            var rng = new System.Random(5);
+            var px = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float n = 0.44f + (float)rng.NextDouble() * 0.04f;
+                    Color c = new(n, n, n + 0.03f);
+                    if (x < 2) c = new Color(0.95f, 0.95f, 0.92f); // parking stall line
+                    px[y * size + x] = c;
+                }
+            _asphalt = Finish(NewTexture(size, size, "Asphalt"), px);
+            return _asphalt;
         }
 
         private static Texture2D Finish(Texture2D tex, Color32[] px)

@@ -17,6 +17,31 @@ namespace ShopIdle.Customers
 
         public Vector3 ExitPosition => _exitPoint != null ? _exitPoint.position : Vector3.zero;
 
+        private float _rateMultiplier = 1f;
+
+        /// <summary>Faster spawning (parking lots, extra counters).</summary>
+        public void SetRateMultiplier(float m) { _rateMultiplier = Mathf.Max(0.1f, m); }
+
+        /// <summary>Move where customers appear and leave (the restaurant's front door).</summary>
+        public void SetDoor(Vector3 spawn, Vector3 exit)
+        {
+            if (_spawnPoint != null) _spawnPoint.position = spawn;
+            if (_exitPoint != null) _exitPoint.position = exit;
+        }
+
+        /// <summary>Queue with the most free room (the scene queue when nothing else exists).</summary>
+        private CustomerQueue PickQueue()
+        {
+            CustomerQueue best = null;
+            int bestFree = 0;
+            foreach (var q in CustomerQueue.All)
+            {
+                int free = q.MaxSize - q.Count;
+                if (free > bestFree) { best = q; bestFree = free; }
+            }
+            return best;
+        }
+
         private float _spawnTimer;
         private const float VipChance = 0.05f;
 
@@ -38,10 +63,11 @@ namespace ShopIdle.Customers
 
         private void Update()
         {
-            if (_queue == null || _queue.IsFull) return;
+            var queue = PickQueue();
+            if (queue == null) return;
 
             // Rush hour makes spawn interval shorter
-            float interval = _spawnInterval;
+            float interval = _spawnInterval / _rateMultiplier;
             var rush = Core.RushHourManager.Instance;
             if (rush != null && rush.IsRushing)
                 interval *= rush.SpawnMultiplier;
@@ -50,10 +76,10 @@ namespace ShopIdle.Customers
             if (_spawnTimer < interval) return;
 
             _spawnTimer = 0f;
-            SpawnCustomer();
+            SpawnCustomer(queue);
         }
 
-        private void SpawnCustomer()
+        private void SpawnCustomer(CustomerQueue queue)
         {
             if (_customerPrefab == null || _spawnPoint == null) return;
 
@@ -83,7 +109,7 @@ namespace ShopIdle.Customers
             customer.SetExitCallback(OnCustomerReachedExit);
 
             // Add to queue
-            _queue.AddCustomer(customer);
+            queue.AddCustomer(customer);
         }
 
         private void CreateCrown(Transform parent)

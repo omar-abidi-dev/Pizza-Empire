@@ -7,7 +7,10 @@ namespace ShopIdle.Save
     public class GameData
     {
         public int money;
-        public int purchasedUpgradeCount;
+        public int purchasedUpgradeCount;   // = plots owned (kept for older saves)
+
+        // Endless plot map: every bought plot in purchase order
+        public List<Plots.PlotSave> plots = new();
         public int activeZonePartialSpent;
         public float playerX;
         public float playerY;

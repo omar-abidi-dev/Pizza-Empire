@@ -12,6 +12,16 @@ namespace ShopIdle.Customers
 
         private readonly List<Customer> _queue = new List<Customer>();
 
+        /// <summary>Every active queue; the spawner feeds the emptiest one.</summary>
+        public static readonly List<CustomerQueue> All = new();
+
+        public int MaxSize => _maxQueueSize;
+        public void SetMaxSize(int size) { _maxQueueSize = Mathf.Max(1, size); }
+        public void SetQueueStart(Transform start) { _queueStart = start; }
+
+        private void OnEnable() { All.Add(this); }
+        private void OnDisable() { All.Remove(this); }
+
         public int Count => _queue.Count;
         public bool IsFull => _queue.Count >= _maxQueueSize;
         public Customer FirstCustomer => _queue.Count > 0 ? _queue[0] : null;

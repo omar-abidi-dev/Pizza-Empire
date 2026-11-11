@@ -165,8 +165,8 @@ namespace ShopIdle.Core
             // Restaurant-specific cooking station model (oven / grill / sushi counter / taco cart).
             // Front (oven arch, grill knobs…) faces -Z towards the pickup marker; procedural
             // restaurants keep the primitive oven.
-            var rm = RestaurantManager.Instance;
-            int index = rm != null ? rm.RestaurantIndex : 0;
+            var ovenComp = root.GetComponentInChildren<Kitchen.Oven>();
+            int index = ovenComp != null ? ovenComp.FoodType : 0;
             var station = PropModels.Instance != null ? PropModels.Instance.StationFor(index) : null;
             if (station != null)
             {

@@ -7,16 +7,9 @@ namespace ShopIdle.Customers
         [Header("Serving")]
         [SerializeField] private float _serveInterval = 0.4f;
         [SerializeField] private float _flyDuration = 0.3f;
-        [SerializeField] private int _moneyPerPizza = 10;
 
-        private int MoneyPerItem
-        {
-            get
-            {
-                var rm = Core.RestaurantManager.Instance;
-                return rm != null ? rm.CurrentConfig.moneyPerItem : _moneyPerPizza;
-            }
-        }
+        /// <summary>Every active counter (workers pick the nearest).</summary>
+        public static readonly System.Collections.Generic.List<CounterZone> All = new();
 
         [Header("References")]
         [SerializeField] private CustomerQueue _queue;
@@ -28,15 +21,40 @@ namespace ShopIdle.Customers
         private int _currentOrderTotal;
 
         private bool _hasCashierWorker;
-        private int _storedPizzas;
+        private readonly System.Collections.Generic.Dictionary<int, int> _stored = new();
+        private int _storedPizzas;  // total over all types
         private float _depositTimer;
         private const float DepositInterval = 0.12f;
 
+        public bool HasCashier => _hasCashierWorker;
         public void EnableCashierWorker() { _hasCashierWorker = true; }
 
-        public void DepositFromChef(int count)
+        /// <summary>Wire a runtime-built counter (plot content).</summary>
+        public void Init(CustomerQueue queue, CustomerSpawner spawner, Money.MoneySpot moneySpot)
         {
+            _queue = queue;
+            _spawner = spawner;
+            _moneySpot = moneySpot;
+        }
+
+        private void OnEnable() { All.Add(this); }
+        private void OnDisable() { All.Remove(this); }
+
+        public void DepositFromChef(int count, int type = 0)
+        {
+            _stored.TryGetValue(type, out int n);
+            _stored[type] = n + count;
             _storedPizzas += count;
+        }
+
+        private int StoredOf(int type) => _stored.TryGetValue(type, out int n) ? n : 0;
+
+        /// <summary>First food type the customer still needs that <paramref name="available"/> can supply.</summary>
+        private static int MatchType(Customer customer, System.Func<int, bool> available)
+        {
+            for (int t = 0; t < customer.OrderTypes; t++)
+                if (customer.Needs(t) > 0 && available(t)) return t;
+            return -1;
         }
 
         private void Update()
@@ -69,44 +87,44 @@ namespace ShopIdle.Customers
 
             Transform pizza = _playerInRange.RemoveTopPizza();
             if (pizza == null) return;
+            DepositFromChef(1, Kitchen.FoodItem.TypeOf(pizza));
             Destroy(pizza.gameObject);
-            _storedPizzas++;
         }
 
         private void AutoServe(Customer customer)
         {
             if (_storedPizzas <= 0) return;
             if (customer == null || customer.PizzasRemaining <= 0) return;
+            int type = MatchType(customer, t => StoredOf(t) > 0);
+            if (type < 0) { ManualServe(customer); return; }
 
             _serveTimer += Time.deltaTime;
             if (_serveTimer < _serveInterval) return;
             _serveTimer = 0f;
 
+            _stored[type]--;
             _storedPizzas--;
-            FlyPizzaToCustomer(customer);
+            FlyPizzaToCustomer(customer, type);
         }
 
         private void ManualServe(Customer customer)
         {
             if (_playerInRange == null || _playerInRange.Count == 0) return;
             if (customer == null || customer.PizzasRemaining <= 0) return;
+            var stack = _playerInRange;
+            int type = MatchType(customer, t => stack.CountOfType(t) > 0);
+            if (type < 0) return;
 
             _serveTimer += Time.deltaTime;
             if (_serveTimer < _serveInterval) return;
 
             _serveTimer = 0f;
-            ServePizza(customer);
+            ServePizza(customer, type);
         }
 
-        private void FlyPizzaToCustomer(Customer customer)
+        private void FlyPizzaToCustomer(Customer customer, int type)
         {
-            var pizzaObj = Core.RestaurantManager.CreateFoodVisual();
-            if (pizzaObj == null)
-            {
-                pizzaObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                pizzaObj.transform.localScale = new Vector3(0.4f, 0.05f, 0.4f);
-                Destroy(pizzaObj.GetComponent<CapsuleCollider>());
-            }
+            var pizzaObj = Kitchen.FoodCatalog.Create(type);
             pizzaObj.transform.position = transform.position + Vector3.up;
 
             Vector3 endPos = customer.transform.position + Vector3.up * 1.2f;
@@ -116,16 +134,16 @@ namespace ShopIdle.Customers
                 Destroy(pizzaObj);
             });
 
-            customer.ReceivePizza();
-            _currentOrderTotal += GetItemPrice(customer);
+            customer.ReceivePizza(type);
+            _currentOrderTotal += GetItemPrice(customer, type);
 
             if (customer.IsFullyServed)
                 CompleteOrder(customer);
         }
 
-        private void ServePizza(Customer customer)
+        private void ServePizza(Customer customer, int type)
         {
-            Transform pizza = _playerInRange.RemoveTopPizza();
+            Transform pizza = _playerInRange.RemoveTopOfType(type);
             if (pizza == null) return;
 
             Vector3 startPos = pizza.position;
@@ -137,17 +155,17 @@ namespace ShopIdle.Customers
                 Destroy(pizza.gameObject);
             });
 
-            customer.ReceivePizza();
-            _currentOrderTotal += GetItemPrice(customer);
+            customer.ReceivePizza(type);
+            _currentOrderTotal += GetItemPrice(customer, type);
 
             if (customer.IsFullyServed)
                 CompleteOrder(customer);
         }
 
         /// <summary>Calculate item price with VIP (x5) and rush hour (x2) multipliers.</summary>
-        private int GetItemPrice(Customer customer)
+        private static int GetItemPrice(Customer customer, int type)
         {
-            int price = MoneyPerItem;
+            int price = Kitchen.FoodCatalog.Price(type);
 
             // VIP pays x5
             if (customer.IsVip)

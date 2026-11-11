@@ -37,7 +37,7 @@ namespace ShopIdle.Core
             // Player visual overhaul
             ApplyPlayerVisual();
 
-            // Existing oven overhaul
+            // Starting oven overhaul (plot stations build their own visuals)
             ApplyOvenVisuals();
 
             // Counter overhaul
@@ -49,7 +49,7 @@ namespace ShopIdle.Core
             // Decorative props (trash bin)
             PropDecor.PlaceAll();
 
-            // Add grass outside
+            // Grass under the whole (endless) plot map
             CreateOutdoorGrass();
         }
 
@@ -79,7 +79,7 @@ namespace ShopIdle.Core
         private void ApplyOvenVisuals()
         {
             // Find ovens by name rather than component (component may be on a child)
-            string[] ovenNames = { "Oven", "Oven2", "Oven3" };
+            string[] ovenNames = { "Oven" };
             foreach (string name in ovenNames)
             {
                 var ovenObj = GameObject.Find(name);
@@ -94,7 +94,7 @@ namespace ShopIdle.Core
 
         private void ApplyCounterVisuals()
         {
-            string[] counterNames = { "Counter", "Counter2" };
+            string[] counterNames = { "Counter" };
             foreach (string name in counterNames)
             {
                 var counterObj = GameObject.Find(name);
@@ -118,63 +118,13 @@ namespace ShopIdle.Core
         {
             if (GameObject.Find("OutdoorGrass") != null) return;
 
-            var p = ColorPalette.Instance;
-
             // Large grass plane behind/around the shop
             var grass = GameObject.CreatePrimitive(PrimitiveType.Plane);
             grass.name = "OutdoorGrass";
             grass.transform.position = new Vector3(0f, -0.05f, 0f);
-            grass.transform.localScale = new Vector3(8f, 1f, 8f);
+            grass.transform.localScale = new Vector3(40f, 1f, 40f); // 400 m: room for many plots
             Object.Destroy(grass.GetComponent<MeshCollider>());
             FloorTheme.TextureGrass(grass);
-        }
-
-        /// <summary>Called when expansion unlocks to retheme new areas.</summary>
-        public void OnExpansionUnlocked()
-        {
-            // Zoom out camera
-            var cam = Object.FindAnyObjectByType<CameraSystem.CameraFollow>();
-            if (cam != null) cam.ZoomOut();
-
-            // Kitchen tiles continue into the expansion (third oven / drive-thru side)
-            FloorTheme.AddKitchenTiles("KitchenTilesExpansion", 8.15f, 19.85f);
-
-            // Restyle expansion walls
-            var p = ColorPalette.Instance;
-            foreach (string wallName in new[] { "ExpWallRight_Upper", "ExpWallRight_Lower", "ExpWallBack" })
-            {
-                var wall = GameObject.Find(wallName);
-                if (wall == null) continue;
-                var mr = wall.GetComponent<MeshRenderer>();
-                if (mr != null) mr.material = ColorPalette.MakeLit(p.wallCoral);
-
-                // Add trim
-                string trimName = wallName + "_Trim";
-                if (wall.transform.Find(trimName) == null)
-                {
-                    var trim = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    trim.name = trimName;
-                    trim.transform.SetParent(wall.transform);
-                    trim.transform.localPosition = new Vector3(0f, 0.48f, 0f);
-                    trim.transform.localScale = new Vector3(1.02f, 0.04f, 1.02f);
-                    Object.Destroy(trim.GetComponent<BoxCollider>());
-                    trim.GetComponent<MeshRenderer>().material = ColorPalette.MakeLit(p.wallTrim);
-                }
-            }
-
-            // Re-theme road
-            var road = GameObject.Find("Road");
-            if (road != null)
-            {
-                var mr = road.GetComponent<MeshRenderer>();
-                if (mr != null) mr.material = ColorPalette.MakeLit(p.roadGrey);
-            }
-            var roadLine = GameObject.Find("RoadLine");
-            if (roadLine != null)
-            {
-                var mr = roadLine.GetComponent<MeshRenderer>();
-                if (mr != null) mr.material = ColorPalette.MakeLit(p.roadDash);
-            }
         }
 
         private void OnDestroy()

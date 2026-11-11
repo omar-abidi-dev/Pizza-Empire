@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 using TMPro;
 
 namespace ShopIdle.Customers
@@ -12,6 +13,9 @@ namespace ShopIdle.Customers
         [SerializeField] private GameObject _speechBubble;
         [SerializeField] private TextMeshPro _orderText;
 
+        [SerializeField] private GameObject _orderIcon;
+
+        private int[] _order = new int[1];   // items still wanted, per food type
         private int _pizzasWanted;
         private int _pizzasReceived;
         private Vector3 _targetPosition;
@@ -43,8 +47,15 @@ namespace ShopIdle.Customers
         public bool IsVip => _isVip;
         public bool LeftAngry => _leftAngry;
 
+        /// <summary>Items still wanted of a food type.</summary>
+        public int Needs(int type) => type >= 0 && type < _order.Length ? _order[type] : 0;
+        public int OrderTypes => _order.Length;
+
+        /// <summary>Order <paramref name="pizzasWanted"/> items, each a random food from the menu.</summary>
         public void Setup(int pizzasWanted, bool isVip = false)
         {
+            _order = new int[Kitchen.Menu.Count];
+            for (int i = 0; i < pizzasWanted; i++) _order[Kitchen.Menu.RandomType()]++;
             _pizzasWanted = pizzasWanted;
             _pizzasReceived = 0;
             _isServed = false;
@@ -65,8 +76,10 @@ namespace ShopIdle.Customers
             _onReachedExit = callback;
         }
 
-        public void ReceivePizza()
+        public void ReceivePizza(int type = 0)
         {
+            if (Needs(type) <= 0) return;
+            _order[type]--;
             _pizzasReceived++;
             UpdateOrderDisplay();
         }
@@ -81,7 +94,7 @@ namespace ShopIdle.Customers
         /// <summary>Show a happy emoji when fully served.</summary>
         public void ShowHappyEmoji()
         {
-            ShowEmoji("\u2764", new Color(1f, 0.3f, 0.3f)); // heart
+            ShowEmoji("\u2665", new Color(1f, 0.3f, 0.3f)); // heart (in the TMP font)
         }
 
         public void AssignDineIn(Tables.DineInTable table, int seatIndex,
@@ -140,8 +153,7 @@ namespace ShopIdle.Customers
             MarkServed();
 
             // Remove from queue
-            var queue = Object.FindAnyObjectByType<CustomerQueue>();
-            if (queue != null)
+            foreach (var queue in CustomerQueue.All.ToArray())
                 queue.RemoveCustomer(this);
 
             // Walk to exit
@@ -213,7 +225,16 @@ namespace ShopIdle.Customers
         private void UpdateOrderDisplay()
         {
             if (_orderText != null)
-                _orderText.text = $"x{PizzasRemaining}";
+                _orderText.text = OrderBubble.Label(_order, PizzasRemaining);
+            if (_orderIcon == null && _speechBubble != null)
+            {
+                var icon = _speechBubble.transform.Find("PizzaIcon");
+                if (icon != null) _orderIcon = icon.gameObject;
+            }
+            if (_orderIcon != null)
+                _orderIcon.SetActive(_order.Length == 1); // single-food menus keep the icon
+            if (_orderText != null && _order.Length > 1)
+                OrderBubble.Fit(_speechBubble.transform, _orderText, Mathf.Max(1, _orderText.text.Split('\n').Length));
 
             if (_speechBubble != null)
                 _speechBubble.SetActive(PizzasRemaining > 0);

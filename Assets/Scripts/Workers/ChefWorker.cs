@@ -22,7 +22,7 @@ namespace ShopIdle.Workers
         private float _actionTimer;
         private float _idleCooldown;
 
-        private const float PizzaHeight = 0.15f;
+        private const float PizzaHeight = 0.2f;
         private const float IdleRetry = 0.5f;
 
         private enum ChefState
@@ -49,10 +49,6 @@ namespace ShopIdle.Workers
             anchor.transform.localPosition = new Vector3(0f, 1.2f, 0f);
             _stackAnchor = anchor.transform;
 
-            // Find counter zone
-            var cashierObj = GameObject.Find("CashierZone");
-            if (cashierObj != null)
-                _counterZone = cashierObj.GetComponent<Customers.CounterZone>();
         }
 
         public void SetMoveSpeed(float speed)
@@ -179,8 +175,23 @@ namespace ShopIdle.Workers
             });
         }
 
+        /// <summary>Nearest counter, preferring ones staffed by a cashier (they can take deliveries).</summary>
+        private Customers.CounterZone PickCounter()
+        {
+            Customers.CounterZone best = null;
+            float bestScore = float.MaxValue;
+            foreach (var c in Customers.CounterZone.All)
+            {
+                float score = (c.transform.position - transform.position).sqrMagnitude;
+                if (!c.HasCashier) score += 400f;
+                if (score < bestScore) { best = c; bestScore = score; }
+            }
+            return best;
+        }
+
         private void GoToCounter()
         {
+            _counterZone = PickCounter();
             if (_counterZone == null)
             {
                 _state = ChefState.Idle;
@@ -205,6 +216,7 @@ namespace ShopIdle.Workers
             int last = _carried.Count - 1;
             Transform pizza = _carried[last];
             _carried.RemoveAt(last);
+            int type = Kitchen.FoodItem.TypeOf(pizza);
 
             if (pizza != null)
             {
@@ -221,7 +233,7 @@ namespace ShopIdle.Workers
             }
 
             if (_counterZone != null)
-                _counterZone.DepositFromChef(1);
+                _counterZone.DepositFromChef(1, type);
         }
     }
 }
