@@ -88,9 +88,12 @@ namespace ShopIdle.Core
         /// Height (m above the floor) of the surface food rests on for each station model,
         /// measured from the model scripts: oven roof, griddle plate, conveyor rails, cart worktop.
         /// </summary>
+        /// <summary>Where items stack relative to the station root, before its yaw (oven v2 shelf sits in front).</summary>
+        public static Vector3 StationTrayOffset(int foodType) => foodType == 0 ? new Vector3(0f, 0f, 0.48f) : Vector3.zero;
+
         public static float StationSurfaceHeight(int restaurantIndex) => restaurantIndex switch
         {
-            0 => 1.12f,
+            0 => 0.80f,   // oven v2: front pickup shelf
             1 => 0.90f,
             2 => 0.93f,
             3 => 0.95f,

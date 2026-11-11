@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 726ec6acffbd84d58b029d6e295c7698, type: 3}
   m_Name: PropModels
   m_EditorClassIdentifier: Assembly-CSharp::ShopIdle.Core.PropModels
-  _counter: {fileID: -561301830214302231, guid: 9908226f6104640fb850166b014340c2, type: 3}
+  _counter: {fileID: 758080045841956773, guid: 6d7c31143f0a042dc806c96960d4feee, type: 3}
   _diningTable: {fileID: 1717506770882490512, guid: 22ff0fc19bf1745c6b19953163a927ca, type: 3}
   _chair: {fileID: 41284089101563332, guid: 1d70999500d9b4c028af327004cb2076, type: 3}
   _trashBin: {fileID: 8930059882378767298, guid: cdcd53631df384015824d1d9ab0c3ff4, type: 3}
@@ -22,7 +22,7 @@ MonoBehaviour:
   _burgerGrill: {fileID: 5997613934761501031, guid: eeea1eca37b754c2e8d73ba811a462e3, type: 3}
   _sushiCounter: {fileID: 2443453254059287477, guid: bce562a92e149428f83325c47d8a6ad8, type: 3}
   _tacoCart: {fileID: -8689577546660687235, guid: 2d4c93b434a254c47b99b2305910cfaa, type: 3}
-  _oven: {fileID: -3954142394141455331, guid: 1d0dcf914052c404d984da0c6067e931, type: 3}
+  _oven: {fileID: 1445215324196499299, guid: a55b4a12a3579481cba3a21eb4dfda84, type: 3}
   _charTorso: {fileID: 28291936544948198, guid: eb209817d6c104c548a6ceabd7dfc711, type: 3}
   _charHead: {fileID: -3235812562015038443, guid: 8cf0f8741bbee4b8294ac3ba6d5ecbc8, type: 3}
   _charArm: {fileID: -4779432365422373493, guid: 43a968f3b466644deab965cac6677743, type: 3}

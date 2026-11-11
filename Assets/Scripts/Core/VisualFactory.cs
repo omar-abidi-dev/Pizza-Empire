@@ -206,6 +206,9 @@ namespace ShopIdle.Core
             {
                 SpawnModel(station, root, "StationModel", 180f);
                 AlignOvenTray(root, FloorY + PropModels.StationSurfaceHeight(index));
+                // Items stack on the model's pickup shelf (model frame, turned by the 180° spawn yaw).
+                Vector3 shelf = Quaternion.Euler(0f, root.eulerAngles.y + 180f, 0f) * PropModels.StationTrayOffset(index);
+                if (shelf != Vector3.zero && ovenComp != null) ovenComp.SetTrayXZ(root.position + shelf);
                 return;
             }
             AlignOvenTray(root, root.position.y + PrimitiveOvenTop);

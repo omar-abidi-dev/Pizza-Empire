@@ -58,6 +58,13 @@ namespace ShopIdle.Kitchen
             _trayAnchor.position = new Vector3(p.x, surfaceWorldY - _trayBaseHeight * _trayAnchor.lossyScale.y, p.z);
         }
 
+        /// <summary>Move the tray horizontally to <paramref name="worldXZ"/> (keeps its height).</summary>
+        public void SetTrayXZ(Vector3 worldXZ)
+        {
+            if (_trayAnchor == null) return;
+            _trayAnchor.position = new Vector3(worldXZ.x, _trayAnchor.position.y, worldXZ.z);
+        }
+
         public Transform TakeTopPizza()
         {
             if (_trayPizzas.Count == 0) return null;
