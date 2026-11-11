@@ -22,6 +22,9 @@ namespace ShopIdle.Core
         [SerializeField] private GameObject _tacoCart;
         [SerializeField] private GameObject _oven;
 
+        [SerializeField] private GameObject _burger;
+        [SerializeField] private GameObject _sushi;
+        [SerializeField] private GameObject _taco;
         [SerializeField] private GameObject _plant;
         [SerializeField] private GameObject _plantTall;
 
@@ -48,6 +51,15 @@ namespace ShopIdle.Core
         public GameObject TacoCart => _tacoCart;
         public GameObject Oven => _oven;
         public GameObject Plant => _plant;
+
+        /// <summary>Food model for a menu type (null = primitive fallback). Pizza comes from <see cref="Pizza"/>.</summary>
+        public GameObject FoodFor(int type) => type switch
+        {
+            1 => _burger,
+            2 => _sushi,
+            3 => _taco,
+            _ => null
+        };
         public GameObject PlantTall => _plantTall;
         public GameObject CharTorso => _charTorso;
         public GameObject CharHead => _charHead;

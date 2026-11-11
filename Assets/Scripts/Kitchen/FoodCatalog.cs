@@ -41,9 +41,13 @@ namespace ShopIdle.Kitchen
         public static int Price(int type) => Mathf.RoundToInt(10f * Mathf.Pow(1.45f, type));
 
         /// <summary>Vertical step between two stacked items of this type.</summary>
+        // Heights of the food models (food_v2.py); the base sits at y = 0.
+        private static readonly float[] ModelHeights = { 0.08f, 0.2f, 0.13f, 0.15f };
+
         public static float StackHeight(int type)
         {
             if (type == 0) return Core.RestaurantManager.PizzaStackHeight;
+            if (HasModel(type)) return ModelHeights[type];
             var d = Get(type);
             bool tall = d.Shape == PrimitiveType.Cylinder || d.Shape == PrimitiveType.Capsule;
             return tall ? d.Scale.y * 2f : d.Scale.y;
@@ -56,12 +60,23 @@ namespace ShopIdle.Kitchen
         /// <summary>Food visual with its pivot at the base, tagged with its type.</summary>
         public static GameObject Create(int type)
         {
-            GameObject root = type == 0 ? Core.VisualFactory.BuildPizzaVisual() : CreatePrimitiveFood(type);
+            GameObject root = type == 0 ? Core.VisualFactory.BuildPizzaVisual()
+                : HasModel(type) ? SpawnModel(type) : CreatePrimitiveFood(type);
             if (root == null) root = CreatePrimitiveFood(type);
             var item = root.GetComponent<FoodItem>();
             if (item == null) item = root.AddComponent<FoodItem>();
             item.SetType(type);
             return root;
+        }
+
+        private static bool HasModel(int type) =>
+            Core.PropModels.Instance != null && Core.PropModels.Instance.FoodFor(type) != null;
+
+        private static GameObject SpawnModel(int type)
+        {
+            var obj = Core.PropSpawner.Spawn(Core.PropModels.Instance.FoodFor(type), null, Vector3.zero);
+            obj.name = Name(type);
+            return obj;
         }
 
         private static GameObject CreatePrimitiveFood(int type)
