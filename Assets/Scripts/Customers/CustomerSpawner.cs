@@ -71,16 +71,10 @@ namespace ShopIdle.Customers
 
             customer.Setup(pizzas, isVip);
 
-            // Color: VIP is gold, normal is random
-            var renderer = obj.GetComponent<MeshRenderer>();
-            if (renderer == null) renderer = obj.GetComponentInChildren<MeshRenderer>();
-            if (renderer != null)
-            {
-                var mat = renderer.material;
-                mat.color = isVip
-                    ? new Color(1f, 0.85f, 0.2f)
-                    : CustomerColors[Random.Range(0, CustomerColors.Length)];
-            }
+            // Build stylized visual
+            var oldMr = obj.GetComponent<MeshRenderer>();
+            if (oldMr != null) oldMr.enabled = false;
+            Core.VisualFactory.BuildCustomerVisual(obj.transform, isVip);
 
             // Add crown for VIP
             if (isVip) CreateCrown(obj.transform);

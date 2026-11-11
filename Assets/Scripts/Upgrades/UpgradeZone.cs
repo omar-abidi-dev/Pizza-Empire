@@ -26,10 +26,10 @@ namespace ShopIdle.Upgrades
         public int TotalCost => _totalCost;
         public int Remaining => _remaining;
 
-        private static readonly Color ZoneColor = new Color(0.6f, 0.3f, 1f, 0.5f);
-        private static readonly Color OutlineColor = new Color(0.6f, 0.3f, 1f, 0.18f);
-        private static readonly Color GoldZoneColor = new Color(1f, 0.75f, 0.1f, 0.6f);
-        private static readonly Color GoldOutlineColor = new Color(1f, 0.75f, 0.1f, 0.2f);
+        private Color ZoneColor => Core.ColorPalette.Instance.zoneDefault;
+        private Color OutlineColor => new Color(ZoneColor.r, ZoneColor.g, ZoneColor.b, 0.18f);
+        private Color GoldZoneColor => Core.ColorPalette.Instance.zoneGold;
+        private Color GoldOutlineColor => new Color(GoldZoneColor.r, GoldZoneColor.g, GoldZoneColor.b, 0.2f);
         private const float ZoneSize = 2.5f;
 
         private bool _isNextRestaurant;
@@ -51,26 +51,25 @@ namespace ShopIdle.Upgrades
 
         private void BuildVisuals(string displayName)
         {
-            // Outline quad (soft glow behind)
-            _outlineQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            // Outline ring (flattened cylinder for rounded look)
+            _outlineQuad = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             _outlineQuad.name = "Outline";
             _outlineQuad.transform.SetParent(transform);
             _outlineQuad.transform.localPosition = new Vector3(0f, 0.01f, 0f);
-            _outlineQuad.transform.localScale = new Vector3(ZoneSize + 0.5f, ZoneSize + 0.5f, 1f);
-            _outlineQuad.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            Object.Destroy(_outlineQuad.GetComponent<MeshCollider>());
+            float outSize = ZoneSize + 0.5f;
+            _outlineQuad.transform.localScale = new Vector3(outSize, 0.02f, outSize);
+            Object.Destroy(_outlineQuad.GetComponent<CapsuleCollider>());
             var outColor = _isNextRestaurant ? GoldOutlineColor : OutlineColor;
             _outlineQuad.GetComponent<MeshRenderer>().material = CreateTransparentMat(outColor);
 
-            // Fill quad
-            _fillQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            // Fill disc (rounded floor tile)
+            _fillQuad = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             _fillQuad.name = "Fill";
             _fillQuad.transform.SetParent(transform);
             _fillQuad.transform.localPosition = new Vector3(0f, 0.02f, 0f);
             float size = _isNextRestaurant ? ZoneSize + 0.5f : ZoneSize;
-            _fillQuad.transform.localScale = new Vector3(size, size, 1f);
-            _fillQuad.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            Object.Destroy(_fillQuad.GetComponent<MeshCollider>());
+            _fillQuad.transform.localScale = new Vector3(size, 0.02f, size);
+            Object.Destroy(_fillQuad.GetComponent<CapsuleCollider>());
             var fillColor = _isNextRestaurant ? GoldZoneColor : ZoneColor;
             _fillQuad.GetComponent<MeshRenderer>().material = CreateTransparentMat(fillColor);
 
@@ -114,7 +113,7 @@ namespace ShopIdle.Upgrades
                 _pulseTimer += Time.deltaTime;
                 float pulse = 1f + Mathf.Sin(_pulseTimer * 3f) * 0.06f;
                 _fillQuad.transform.localScale = new Vector3(
-                    ZoneSize * pulse, ZoneSize * pulse, 1f);
+                    ZoneSize * pulse, 0.02f, ZoneSize * pulse);
             }
 
             if (_playerInRange == null) return;
@@ -154,9 +153,8 @@ namespace ShopIdle.Upgrades
             bill.transform.position = _playerInRange.position + Vector3.up * 1.5f;
             Object.Destroy(bill.GetComponent<BoxCollider>());
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = new Color(0.2f, 0.75f, 0.3f);
-            bill.GetComponent<MeshRenderer>().material = mat;
+            bill.GetComponent<MeshRenderer>().material =
+                Core.ColorPalette.MakeLit(Core.ColorPalette.Instance.billGreen);
 
             var fly = bill.AddComponent<Kitchen.PizzaFly>();
             fly.Init(bill.transform.position, transform.position + Vector3.up * 0.5f,

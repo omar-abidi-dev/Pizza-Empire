@@ -249,26 +249,24 @@ namespace ShopIdle.Upgrades
 
             var oven = GameObject.CreatePrimitive(PrimitiveType.Cube);
             oven.name = "Oven2";
-            oven.transform.position = new Vector3(-6f, 0.5f, 7f);
-            oven.transform.localScale = firstOven.transform.localScale;
-
-            // Use restaurant oven color
-            var rm = Core.RestaurantManager.Instance;
-            var ovenColor = rm != null ? rm.CurrentConfig.ovenColor : new Color(0.5f, 0.15f, 0.1f);
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = ovenColor;
-            oven.GetComponent<MeshRenderer>().material = mat;
+            oven.transform.position = new Vector3(-6f, 0f, 7f);
+            oven.transform.localScale = Vector3.one;
+            oven.GetComponent<MeshRenderer>().enabled = false;
 
             oven.GetComponent<BoxCollider>().isTrigger = true;
+            oven.GetComponent<BoxCollider>().size = new Vector3(1.5f, 1.2f, 1.2f);
+            oven.GetComponent<BoxCollider>().center = new Vector3(0f, 0.5f, 0f);
 
             var obstacle = oven.AddComponent<NavMeshObstacle>();
             obstacle.carving = true;
+
+            Core.VisualFactory.BuildOvenVisual(oven.transform);
 
             var ovenComp = oven.AddComponent<Kitchen.Oven>();
 
             var tray = new GameObject("TrayAnchor");
             tray.transform.SetParent(oven.transform);
-            tray.transform.localPosition = new Vector3(0f, 0.6f, 0f);
+            tray.transform.localPosition = new Vector3(0f, 1.0f, 0f);
 
             ovenComp.SetTrayAnchor(tray.transform);
             if (firstComp != null)
@@ -333,11 +331,9 @@ namespace ShopIdle.Upgrades
             worker.name = "CashierWorker";
             worker.transform.position = new Vector3(0f, 0.5f, 8.5f);
             Object.Destroy(worker.GetComponent<CapsuleCollider>());
+            worker.GetComponent<MeshRenderer>().enabled = false;
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = new Color(0.3f, 0.5f, 0.9f);
-            worker.GetComponent<MeshRenderer>().material = mat;
-
+            Core.VisualFactory.BuildWorkerVisual(worker.transform, "Cashier");
             worker.AddComponent<Workers.CashierWorker>();
         }
 
@@ -349,21 +345,9 @@ namespace ShopIdle.Upgrades
             chef.name = "ChefWorker";
             chef.transform.position = new Vector3(-2f, 0.5f, 5f);
             Object.Destroy(chef.GetComponent<CapsuleCollider>());
+            chef.GetComponent<MeshRenderer>().enabled = false;
 
-            var bodyMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            bodyMat.color = new Color(1f, 0.55f, 0.15f);
-            chef.GetComponent<MeshRenderer>().material = bodyMat;
-
-            var hat = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            hat.name = "ChefHat";
-            hat.transform.SetParent(chef.transform);
-            hat.transform.localPosition = new Vector3(0f, 1.1f, 0f);
-            hat.transform.localScale = new Vector3(0.5f, 0.25f, 0.5f);
-            Object.Destroy(hat.GetComponent<CapsuleCollider>());
-
-            var hatMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            hatMat.color = Color.white;
-            hat.GetComponent<MeshRenderer>().material = hatMat;
+            Core.VisualFactory.BuildWorkerVisual(chef.transform, "Chef");
 
             var agent = chef.AddComponent<NavMeshAgent>();
             agent.speed = 3.5f;
@@ -490,10 +474,9 @@ namespace ShopIdle.Upgrades
             cleaner.name = "CleanerWorker";
             cleaner.transform.position = new Vector3(3f, 0.5f, -1f);
             Object.Destroy(cleaner.GetComponent<CapsuleCollider>());
+            cleaner.GetComponent<MeshRenderer>().enabled = false;
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = new Color(0.45f, 0.85f, 0.45f);
-            cleaner.GetComponent<MeshRenderer>().material = mat;
+            Core.VisualFactory.BuildWorkerVisual(cleaner.transform, "Cleaner");
 
             var agent = cleaner.AddComponent<NavMeshAgent>();
             agent.speed = 3f;
@@ -555,6 +538,10 @@ namespace ShopIdle.Upgrades
 
             Core.JuiceManager.Instance?.ShakeCamera(0.5f);
             Core.AudioManager.Instance?.Play(Core.SoundType.Fanfare);
+
+            // Restyle expansion area with current theme
+            var themer = Object.FindAnyObjectByType<Core.SceneThemer>();
+            if (themer != null) themer.OnExpansionUnlocked();
 
             StartCoroutine(ShowBanner("NEW AREA UNLOCKED!"));
         }
@@ -677,25 +664,24 @@ namespace ShopIdle.Upgrades
 
             var oven = GameObject.CreatePrimitive(PrimitiveType.Cube);
             oven.name = "Oven3";
-            oven.transform.position = new Vector3(14f, 0.5f, 7f);
-            oven.transform.localScale = firstOven.transform.localScale;
-
-            var rm = Core.RestaurantManager.Instance;
-            var ovenColor = rm != null ? rm.CurrentConfig.ovenColor : new Color(0.5f, 0.15f, 0.1f);
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = ovenColor;
-            oven.GetComponent<MeshRenderer>().material = mat;
+            oven.transform.position = new Vector3(14f, 0f, 7f);
+            oven.transform.localScale = Vector3.one;
+            oven.GetComponent<MeshRenderer>().enabled = false;
 
             oven.GetComponent<BoxCollider>().isTrigger = true;
+            oven.GetComponent<BoxCollider>().size = new Vector3(1.5f, 1.2f, 1.2f);
+            oven.GetComponent<BoxCollider>().center = new Vector3(0f, 0.5f, 0f);
 
             var obstacle = oven.AddComponent<NavMeshObstacle>();
             obstacle.carving = true;
+
+            Core.VisualFactory.BuildOvenVisual(oven.transform);
 
             var ovenComp = oven.AddComponent<Kitchen.Oven>();
 
             var tray = new GameObject("TrayAnchor");
             tray.transform.SetParent(oven.transform);
-            tray.transform.localPosition = new Vector3(0f, 0.6f, 0f);
+            tray.transform.localPosition = new Vector3(0f, 1.0f, 0f);
 
             ovenComp.SetTrayAnchor(tray.transform);
             if (firstComp != null)
@@ -713,21 +699,9 @@ namespace ShopIdle.Upgrades
             worker.name = "DriveThruWorker";
             worker.transform.position = new Vector3(14f, 0.5f, 5f);
             Object.Destroy(worker.GetComponent<CapsuleCollider>());
+            worker.GetComponent<MeshRenderer>().enabled = false;
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = new Color(0.9f, 0.45f, 0.9f);
-            worker.GetComponent<MeshRenderer>().material = mat;
-
-            var cap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            cap.name = "DTCap";
-            cap.transform.SetParent(worker.transform);
-            cap.transform.localPosition = new Vector3(0f, 1.05f, 0f);
-            cap.transform.localScale = new Vector3(0.55f, 0.12f, 0.55f);
-            Object.Destroy(cap.GetComponent<CapsuleCollider>());
-
-            var capMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            capMat.color = new Color(0.9f, 0.2f, 0.2f);
-            cap.GetComponent<MeshRenderer>().material = capMat;
+            Core.VisualFactory.BuildWorkerVisual(worker.transform, "DriveThru");
 
             var agent = worker.AddComponent<NavMeshAgent>();
             agent.speed = 3.5f;

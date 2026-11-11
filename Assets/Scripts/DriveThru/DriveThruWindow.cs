@@ -49,12 +49,12 @@ namespace ShopIdle.DriveThru
 
         private static readonly Color[] CarColors =
         {
-            new(0.9f, 0.2f, 0.2f),
-            new(0.2f, 0.4f, 0.9f),
-            new(0.95f, 0.95f, 0.95f),
-            new(0.2f, 0.2f, 0.2f),
-            new(0.1f, 0.7f, 0.3f),
-            new(0.9f, 0.75f, 0.1f),
+            new(0.92f, 0.55f, 0.55f), // soft red
+            new(0.55f, 0.65f, 0.92f), // soft blue
+            new(0.95f, 0.95f, 0.92f), // cream
+            new(0.65f, 0.88f, 0.65f), // mint
+            new(0.92f, 0.82f, 0.55f), // butter
+            new(0.85f, 0.65f, 0.88f), // lavender
         };
 
         public Vector3 ServePoint => transform.position;

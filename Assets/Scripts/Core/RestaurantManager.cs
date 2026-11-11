@@ -99,13 +99,14 @@ namespace ShopIdle.Core
         {
             _templates = new RestaurantConfig[4];
 
+            var p = ColorPalette.Instance;
             _templates[0] = MakeConfig(
                 "Pizza Palace", "Pizza",
-                new Color(1f, 0.85f, 0.2f), PrimitiveType.Cylinder,
+                p.pizzaCheese, PrimitiveType.Cylinder,
                 new Vector3(0.4f, 0.05f, 0.4f),
-                new Color(0.75f, 0.72f, 0.68f),
-                new Color(0.85f, 0.82f, 0.75f),
-                new Color(0.5f, 0.15f, 0.1f),
+                p.floorCream,
+                p.wallCoral,
+                p.ovenBody,
                 10, 15, 0);
 
             _templates[1] = MakeConfig(
@@ -238,6 +239,10 @@ namespace ShopIdle.Core
         /// <summary>Create a food item matching the current restaurant's config.</summary>
         public static GameObject CreateFoodVisual()
         {
+            // For the first restaurant (pizza), use the detailed pizza visual
+            if (_instance != null && _instance._restaurantIndex == 0)
+                return VisualFactory.BuildPizzaVisual();
+
             var config = _instance != null ? _instance.CurrentConfig : null;
             var shape = config != null ? config.foodShape : PrimitiveType.Cylinder;
             var color = config != null ? config.foodColor : new Color(1f, 0.85f, 0.2f);
@@ -254,6 +259,7 @@ namespace ShopIdle.Core
             {
                 _foodMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
                 _foodMaterial.color = color;
+                _foodMaterial.SetFloat("_Smoothness", 0.3f);
                 _cachedFoodColor = color;
             }
             obj.GetComponent<MeshRenderer>().sharedMaterial = _foodMaterial;

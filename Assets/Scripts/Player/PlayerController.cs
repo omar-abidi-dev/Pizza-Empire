@@ -50,17 +50,19 @@ namespace ShopIdle.Player
 
         private void OnEnable()
         {
+            if (_input == null) _input = new InputSystem_Actions();
             _input.Player.Enable();
         }
 
         private void OnDisable()
         {
-            _input.Player.Disable();
+            _input?.Player.Disable();
         }
 
         private void Update()
         {
             // Read keyboard/gamepad input
+            if (_input == null) return;
             Vector2 rawInput = _input.Player.Move.ReadValue<Vector2>();
 
             // Use joystick input if keyboard input is zero

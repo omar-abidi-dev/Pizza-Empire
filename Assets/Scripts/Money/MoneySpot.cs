@@ -46,11 +46,13 @@ namespace ShopIdle.Money
             // Slight random rotation for natural look
             obj.transform.rotation = Quaternion.Euler(0f, Random.Range(-8f, 8f), 0f);
 
-            // Green material
+            // Green material from palette
             if (_billMaterial == null)
             {
+                var p = Core.ColorPalette.Instance;
                 _billMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                _billMaterial.color = new Color(0.2f, 0.7f, 0.25f);
+                _billMaterial.color = p.billGreen;
+                _billMaterial.SetFloat("_Smoothness", 0.2f);
             }
             obj.GetComponent<MeshRenderer>().material = _billMaterial;
 
