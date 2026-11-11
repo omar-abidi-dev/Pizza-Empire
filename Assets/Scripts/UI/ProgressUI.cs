@@ -1,123 +1,39 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 namespace ShopIdle.UI
 {
     /// <summary>
-    /// Restaurant progress bar displayed below the money counter: fills as plots are bought
-    /// towards the next menu milestone (a new food type).
+    /// Small pill under the objective card: fills as plots are bought towards the next
+    /// menu milestone ("Sushi at 7 plots  4/7").
     /// </summary>
     public class ProgressUI : MonoBehaviour
     {
-        private Image _fillBar;
-        private TextMeshProUGUI _progressText;
-        private TextMeshProUGUI _nameText;
-        private string _restaurantName;
+        private Image _fill;
+        private TextMeshProUGUI _text;
 
         public void Init(string restaurantName)
         {
-            _restaurantName = restaurantName;
-            BuildUI(restaurantName);
+            var canvas = UIFactory.MainCanvas();
+            if (canvas == null) return;
+            float top = ObjectiveCard.Top + ObjectiveCard.Height + 14f;
+            var pill = UIFactory.Fixed("MenuProgress", canvas.transform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(30f, -top), new Vector2(440f, 50f));
+            _fill = UIFactory.Bar(pill, new Color(0.08f, 0.2f, 0.3f, 0.7f), new Color(1f, 0.72f, 0.3f));
+            _text = UIFactory.Text(UIFactory.Rect("Text", pill, Vector2.zero, Vector2.one), "", 24, Color.white,
+                TextAlignmentOptions.Center, true);
         }
 
         /// <summary>Fill from the last menu milestone to the next one.</summary>
         public void Show(int plotsOwned)
         {
+            if (_fill == null) return;
             int size = Kitchen.Menu.SizeFor(plotsOwned);
             int prev = size == 1 ? 1 : Kitchen.Menu.MilestoneFor(size);
             int next = Kitchen.Menu.MilestoneFor(size + 1);
-            if (_fillBar != null)
-                _fillBar.fillAmount = Mathf.Clamp01((float)(plotsOwned - prev) / (next - prev));
-            if (_progressText != null)
-                _progressText.text = $"{plotsOwned}/{next} plots - next: {Kitchen.FoodCatalog.Name(size)}";
-            if (_nameText != null)
-                _nameText.text = $"{_restaurantName}  <size=75%>Menu: {MenuList(size)}</size>";
-        }
-
-        private static string MenuList(int size)
-        {
-            var names = new string[size];
-            for (int t = 0; t < size; t++) names[t] = Kitchen.FoodCatalog.Name(t);
-            return string.Join(", ", names);
-        }
-
-        private void BuildUI(string restaurantName)
-        {
-            var canvas = Object.FindAnyObjectByType<Canvas>();
-            if (canvas == null) return;
-
-            // Container
-            var container = new GameObject("ProgressUI");
-            container.transform.SetParent(canvas.transform, false);
-            var containerRect = container.AddComponent<RectTransform>();
-            containerRect.anchorMin = new Vector2(0.15f, 0.935f);
-            containerRect.anchorMax = new Vector2(0.85f, 0.955f);
-            containerRect.offsetMin = Vector2.zero;
-            containerRect.offsetMax = Vector2.zero;
-
-            // Background bar
-            var bgObj = new GameObject("BarBG");
-            bgObj.transform.SetParent(container.transform, false);
-            var bgRect = bgObj.AddComponent<RectTransform>();
-            bgRect.anchorMin = Vector2.zero;
-            bgRect.anchorMax = Vector2.one;
-            bgRect.offsetMin = Vector2.zero;
-            bgRect.offsetMax = Vector2.zero;
-            var bgImg = bgObj.AddComponent<Image>();
-            bgImg.color = new Color(0.15f, 0.15f, 0.2f, 0.8f);
-
-            // Fill bar
-            var fillObj = new GameObject("BarFill");
-            fillObj.transform.SetParent(container.transform, false);
-            var fillRect = fillObj.AddComponent<RectTransform>();
-            fillRect.anchorMin = Vector2.zero;
-            fillRect.anchorMax = Vector2.one;
-            fillRect.offsetMin = new Vector2(2f, 2f);
-            fillRect.offsetMax = new Vector2(-2f, -2f);
-            _fillBar = fillObj.AddComponent<Image>();
-            _fillBar.color = new Color(0.4f, 0.8f, 0.3f, 0.9f);
-            _fillBar.type = Image.Type.Filled;
-            _fillBar.fillMethod = Image.FillMethod.Horizontal;
-            _fillBar.fillAmount = 0f;
-
-            // Progress text (right side of bar)
-            var textObj = new GameObject("ProgressText");
-            textObj.transform.SetParent(container.transform, false);
-            var textRect = textObj.AddComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
-            _progressText = textObj.AddComponent<TextMeshProUGUI>();
-            _progressText.text = "";
-            _progressText.fontSize = 18;
-            _progressText.alignment = TextAlignmentOptions.Center;
-            _progressText.color = Color.white;
-            _progressText.fontStyle = FontStyles.Bold;
-            _progressText.outlineWidth = 0.2f;
-            _progressText.outlineColor = new Color32(0, 0, 0, 200);
-
-            // Restaurant name + prestige info (above the bar)
-            var pm = Core.PrestigeManager.Instance;
-            string displayName = restaurantName;
-            if (pm != null && pm.PrestigeLevel > 0)
-                displayName += $"  <color=#FFD633>City {pm.PrestigeLevel + 1} x{pm.IncomeMultiplier:F1}</color>";
-
-            var nameObj = new GameObject("RestaurantName");
-            nameObj.transform.SetParent(canvas.transform, false);
-            var nameRect = nameObj.AddComponent<RectTransform>();
-            nameRect.anchorMin = new Vector2(0.15f, 0.955f);
-            nameRect.anchorMax = new Vector2(0.85f, 0.975f);
-            nameRect.offsetMin = Vector2.zero;
-            nameRect.offsetMax = Vector2.zero;
-            _nameText = nameObj.AddComponent<TextMeshProUGUI>();
-            _nameText.text = displayName;
-            _nameText.fontSize = 20;
-            _nameText.alignment = TextAlignmentOptions.Center;
-            _nameText.color = new Color(1f, 0.9f, 0.5f);
-            _nameText.fontStyle = FontStyles.Bold;
-            _nameText.richText = true;
+            UIFactory.SetFill(_fill, Mathf.Clamp01((float)(plotsOwned - prev) / (next - prev)));
+            _text.text = $"New food: {Kitchen.FoodCatalog.Name(size)}  {plotsOwned}/{next} areas";
         }
     }
 }

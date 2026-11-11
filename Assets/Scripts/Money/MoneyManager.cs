@@ -51,7 +51,7 @@ namespace ShopIdle.Money
         #if UNITY_EDITOR
         private void OnGUI()
         {
-            if (GUI.Button(new Rect(Screen.width - 110, 10, 100, 40), "+$500"))
+            if (GUI.Button(new Rect(Screen.width - 110, Screen.height - 50, 100, 40), "+$500")) // editor cheat, bottom-right
                 AddMoney(500);
         }
         #endif

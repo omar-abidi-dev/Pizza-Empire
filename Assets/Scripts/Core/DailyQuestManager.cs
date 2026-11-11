@@ -171,40 +171,27 @@ namespace ShopIdle.Core
 
         // ── UI ──
 
+        /// <summary>Rounded white menu button (three bars) under the header; opens the quest list.</summary>
         private void CreateQuestButton()
         {
-            var canvas = UnityEngine.Object.FindAnyObjectByType<Canvas>();
+            var canvas = UI.UIFactory.MainCanvas();
             if (canvas == null) return;
 
-            var btnObj = new GameObject("QuestButton");
-            btnObj.transform.SetParent(canvas.transform, false);
-            var rect = btnObj.AddComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(10f, -10f);
-            rect.sizeDelta = new Vector2(70f, 70f);
-
-            var bg = btnObj.AddComponent<Image>();
-            bg.color = new Color(0.15f, 0.1f, 0.35f, 0.8f);
-
-            var btn = btnObj.AddComponent<Button>();
+            var btnRect = UI.UIFactory.Fixed("QuestButton", canvas.transform, new Vector2(0f, 1f), new Vector2(0f, 1f),
+                new Vector2(24f, -(UI.HudTopBar.HeaderHeight + 18f)), new Vector2(104f, 104f));
+            var bg = UI.UIFactory.Panel(btnRect, Color.white);
+            bg.raycastTarget = true;
+            var btn = btnRect.gameObject.AddComponent<Button>();
             btn.targetGraphic = bg;
             btn.onClick.AddListener(TogglePanel);
 
-            var labelObj = new GameObject("Label");
-            labelObj.transform.SetParent(btnObj.transform, false);
-            var labelRect = labelObj.AddComponent<RectTransform>();
-            labelRect.anchorMin = Vector2.zero;
-            labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = Vector2.zero;
-            labelRect.offsetMax = Vector2.zero;
-            var tmp = labelObj.AddComponent<TextMeshProUGUI>();
-            tmp.text = "Q";
-            tmp.fontSize = 32;
-            tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color = new Color(1f, 0.85f, 0.3f);
-            tmp.fontStyle = FontStyles.Bold;
+            var teal = new Color(0.12f, 0.52f, 0.58f);
+            for (int i = 0; i < 3; i++)
+            {
+                var bar = UI.UIFactory.Fixed("Bar", btnRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                    new Vector2(0f, 22f - i * 22f), new Vector2(56f, 12f));
+                UI.UIFactory.Image(bar, UI.UISprites.Rounded, teal, true);
+            }
         }
 
         private void TogglePanel()

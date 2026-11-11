@@ -28,6 +28,12 @@ namespace ShopIdle.Save
         // Gems
         public int gems;
 
+        // Level / XP and the current objective
+        public int level = 1;
+        public int xp;
+        public int objectiveIndex;
+        public int objectiveProgress;
+
         // Daily quests
         public string dailyQuestDate;          // "yyyy-MM-dd"
         public List<DailyQuestData> dailyQuests = new();

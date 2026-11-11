@@ -50,6 +50,8 @@ namespace ShopIdle.Save
             EnsureManager<Core.DailyQuestManager>("DailyQuestManager");
             EnsureManager<Core.RushHourManager>("RushHourManager");
             EnsureManager<Core.SceneThemer>("SceneThemer");
+            EnsureManager<Core.LevelManager>("LevelManager");
+            EnsureManager<Core.ObjectiveTracker>("ObjectiveTracker");
             EnsureManager<UI.UIBuilder>("UIBuilder");
 
             // Delay initialization flag to next frame so all managers finish Start()

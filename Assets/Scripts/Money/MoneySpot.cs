@@ -106,6 +106,7 @@ namespace ShopIdle.Money
         {
             if (MoneyManager.Instance != null)
                 MoneyManager.Instance.AddMoney(bill.Value);
+            Core.GameEvents.RaiseCashCollected(bill.Value);
 
             Core.AudioManager.Instance?.Play(Core.SoundType.CoinTick, 0.5f);
             Core.JuiceManager.Instance?.SpawnCoinBurst(

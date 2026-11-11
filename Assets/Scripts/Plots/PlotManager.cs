@@ -77,6 +77,7 @@ namespace ShopIdle.Plots
             Refresh(true);
 
             Core.JuiceManager.Instance?.ShakeCamera(0.4f);
+            Core.GameEvents.RaisePlotBought();
             if (milestone) Kitchen.Menu.SetSize(Kitchen.Menu.SizeFor(_owned.Count), true);
             else UI.Banner.Show($"{PlotContent.DisplayName(plot.Kind)}!");
 

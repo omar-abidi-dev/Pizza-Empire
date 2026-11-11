@@ -173,6 +173,7 @@ namespace ShopIdle.Tables
         private void OnBillCollected(Money.MoneyPickup bill)
         {
             Money.MoneyManager.Instance?.AddMoney(bill.Value);
+            Core.GameEvents.RaiseCashCollected(bill.Value);
             Core.AudioManager.Instance?.Play(Core.SoundType.CoinTick, 0.5f);
         }
 

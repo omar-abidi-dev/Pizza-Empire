@@ -195,6 +195,7 @@ namespace ShopIdle.Customers
             // Quest tracking
             var qm = Core.DailyQuestManager.Instance;
             qm?.TrackServeCustomer();
+            Core.GameEvents.RaiseCustomerServed();
             qm?.TrackMoneyCollected(earned);
             if (customer.IsVip) qm?.TrackVIPServed();
 

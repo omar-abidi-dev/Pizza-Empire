@@ -194,6 +194,7 @@ namespace ShopIdle.DriveThru
 
                 // Quest tracking
                 Core.DailyQuestManager.Instance?.TrackServeCustomer();
+                Core.GameEvents.RaiseCustomerServed();
                 Core.DailyQuestManager.Instance?.TrackMoneyCollected(earned);
             }
         }
