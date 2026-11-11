@@ -264,6 +264,21 @@ namespace ShopIdle.Core
                 new Vector3(backX, 0.48f, 0f), new Vector3(0.05f, 0.3f, 0.3f), p.chairSeat);
         }
 
+        /// <summary>
+        /// Drive-thru booth filling the expansion wall gap, window facing the road (+X).
+        /// Returns false when no model is available so the caller can build its primitive shelf.
+        /// </summary>
+        public static bool BuildDriveThruBooth(Vector3 position)
+        {
+            var model = PropModels.Instance != null ? PropModels.Instance.DriveThruBooth : null;
+            if (model == null) return false;
+            if (GameObject.Find("DriveThruBooth") != null) return true;
+
+            var booth = PropSpawner.Spawn(model, null, position, 90f);
+            booth.name = "DriveThruBooth";
+            return true;
+        }
+
         // ═══════════════════════════════════════
         //  Food
         // ═══════════════════════════════════════

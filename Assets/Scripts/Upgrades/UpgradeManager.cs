@@ -549,15 +549,19 @@ namespace ShopIdle.Upgrades
             lineMat.color = new Color(0.95f, 0.85f, 0.15f);
             line.GetComponent<MeshRenderer>().material = lineMat;
 
-            var shelf = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            shelf.name = "DriveThruShelf";
-            shelf.transform.position = new Vector3(19.8f, 0.7f, 5.5f);
-            shelf.transform.localScale = new Vector3(0.6f, 0.08f, 1.5f);
-            Object.Destroy(shelf.GetComponent<BoxCollider>());
+            // Booth model fills the wall gap (z 4–7); primitive shelf as fallback.
+            if (!Core.VisualFactory.BuildDriveThruBooth(new Vector3(20f, 0f, 5.5f)))
+            {
+                var shelf = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                shelf.name = "DriveThruShelf";
+                shelf.transform.position = new Vector3(19.8f, 0.7f, 5.5f);
+                shelf.transform.localScale = new Vector3(0.6f, 0.08f, 1.5f);
+                Object.Destroy(shelf.GetComponent<BoxCollider>());
 
-            var shelfMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            shelfMat.color = new Color(0.6f, 0.4f, 0.2f);
-            shelf.GetComponent<MeshRenderer>().material = shelfMat;
+                var shelfMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                shelfMat.color = new Color(0.6f, 0.4f, 0.2f);
+                shelf.GetComponent<MeshRenderer>().material = shelfMat;
+            }
         }
 
         private void CreateExpansionWall(string name, Vector3 position, Vector3 scale, Color color)
