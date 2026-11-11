@@ -7,11 +7,11 @@ namespace ShopIdle.Kitchen
     {
         [Header("Production")]
         [SerializeField] private float _produceInterval = 2f;
-        [SerializeField] private int _maxTrayCapacity = 6;
+        [SerializeField] private int _maxTrayCapacity = 20;
 
         [Header("Tray Layout")]
         [SerializeField] private Transform _trayAnchor;
-        [SerializeField] private float _pizzaHeight = 0.15f;
+        [SerializeField] private float _pizzaHeight = 0.15f; // fallback when no RestaurantManager
         [SerializeField] private float _trayBaseHeight = 1.1f;
 
         [Header("Pickup")]
@@ -22,6 +22,8 @@ namespace ShopIdle.Kitchen
         [SerializeField] private GameObject _pizzaPrefab;
 
         public GameObject PizzaPrefab => _pizzaPrefab;
+        private float StackStep => Core.RestaurantManager.Instance != null
+            ? Core.RestaurantManager.FoodStackHeight : _pizzaHeight;
         public float ProduceInterval => _produceInterval;
         public int TrayCount => _trayPizzas.Count;
 
@@ -85,7 +87,7 @@ namespace ShopIdle.Kitchen
             Transform anchor = _trayAnchor != null ? _trayAnchor : transform;
             t.SetParent(anchor);
 
-            float y = _trayBaseHeight + _trayPizzas.Count * _pizzaHeight;
+            float y = _trayBaseHeight + _trayPizzas.Count * StackStep;
             t.localPosition = new Vector3(0f, y, 0f);
             t.localRotation = Quaternion.identity;
 
@@ -133,7 +135,7 @@ namespace ShopIdle.Kitchen
             Transform anchor = _trayAnchor != null ? _trayAnchor : transform;
             for (int i = 0; i < _trayPizzas.Count; i++)
             {
-                float y = _trayBaseHeight + i * _pizzaHeight;
+                float y = _trayBaseHeight + i * StackStep;
                 _trayPizzas[i].localPosition = new Vector3(0f, y, 0f);
             }
         }

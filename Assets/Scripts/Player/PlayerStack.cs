@@ -8,12 +8,15 @@ namespace ShopIdle.Player
     {
         [Header("Stack Settings")]
         [SerializeField] private int _maxCapacity = 5;
-        [SerializeField] private float _pizzaHeight = 0.15f;
+        [SerializeField] private float _pizzaHeight = 0.15f; // fallback when no RestaurantManager
         [SerializeField] private float _stackBaseHeight = 1.2f;
 
         [Header("References")]
         [SerializeField] private Transform _stackAnchor;
         [SerializeField] private GameObject _maxLabel;
+
+        private float StackStep => Core.RestaurantManager.Instance != null
+            ? Core.RestaurantManager.FoodStackHeight : _pizzaHeight;
 
         private readonly List<Transform> _pizzas = new List<Transform>();
         private float _wobblePhase;
@@ -96,13 +99,13 @@ namespace ShopIdle.Player
         public Vector3 GetNextSlotWorldPos()
         {
             Transform anchor = _stackAnchor != null ? _stackAnchor : transform;
-            float y = _stackBaseHeight + _pizzas.Count * _pizzaHeight;
+            float y = _stackBaseHeight + _pizzas.Count * StackStep;
             return anchor.position + Vector3.up * y;
         }
 
         private void SnapPizzaToSlot(Transform pizza, int index)
         {
-            float y = index * _pizzaHeight;
+            float y = index * StackStep;
             pizza.localPosition = new Vector3(0f, y, 0f);
             pizza.localRotation = Quaternion.identity;
         }

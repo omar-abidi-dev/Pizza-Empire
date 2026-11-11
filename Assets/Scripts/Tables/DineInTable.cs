@@ -189,7 +189,7 @@ namespace ShopIdle.Tables
 
             Destroy(plate.GetComponent<CapsuleCollider>());
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var mat = new Material(ShopIdle.Core.ColorPalette.LitShader);
             mat.color = new Color(0.6f, 0.6f, 0.55f);
             plate.GetComponent<MeshRenderer>().material = mat;
 
@@ -211,10 +211,10 @@ namespace ShopIdle.Tables
 
         private Money.MoneyPickup CreateBill(int stackIndex)
         {
-            // Cash-stack model sitting on the table top (0.55 m)
-            var stackPos = transform.position +
-                new Vector3(0f, 0.55f + stackIndex * Core.VisualFactory.CashStackHeight, 0.2f);
-            var model = Core.VisualFactory.CreateCashVisual("TableBill", stackPos, Random.Range(-15f, 15f));
+            // Cash-stack 3x3 pile growing upward on the table top (0.55 m)
+            var stackPos = transform.position + Vector3.up * 0.55f +
+                Money.CashPile.Offset(stackIndex, 0.2f, 0.3f, Core.VisualFactory.CashStackHeight);
+            var model = Core.VisualFactory.CreateCashVisual("TableBill", stackPos, Money.CashPile.RandomYaw());
             if (model != null)
                 return model.AddComponent<Money.MoneyPickup>();
 
@@ -228,7 +228,7 @@ namespace ShopIdle.Tables
 
             Destroy(obj.GetComponent<BoxCollider>());
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var mat = new Material(ShopIdle.Core.ColorPalette.LitShader);
             mat.color = new Color(0.2f, 0.7f, 0.25f);
             obj.GetComponent<MeshRenderer>().material = mat;
 

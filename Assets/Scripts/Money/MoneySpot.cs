@@ -18,6 +18,10 @@ namespace ShopIdle.Money
 
         private static Material _billMaterial;
 
+        // Pile cell size for 0.32 x 0.18 m bill stacks turned along Z (fits the 0.9 m deep counter).
+        private const float CellX = 0.2f;
+        private const float CellZ = 0.34f;
+
         public void SpawnBills(int totalMoney, int perBill = 10)
         {
             int count = Mathf.Max(1, totalMoney / perBill);
@@ -37,9 +41,9 @@ namespace ShopIdle.Money
             Transform anchor = _billAnchor != null ? _billAnchor : transform;
             float yaw = Random.Range(-8f, 8f);
 
-            // Cash-stack model (pickup lives on the model root)
-            var stackPos = anchor.position + Vector3.up * (stackIndex * Core.VisualFactory.CashStackHeight);
-            var model = Core.VisualFactory.CreateCashVisual("Bill", stackPos, yaw);
+            // Cash-stack model in a 3x3 pile that grows upward (pickup lives on the model root)
+            var stackPos = anchor.position + CashPile.Offset(stackIndex, CellX, CellZ, Core.VisualFactory.CashStackHeight);
+            var model = Core.VisualFactory.CreateCashVisual("Bill", stackPos, CashPile.RandomYaw());
             if (model != null)
                 return model.AddComponent<MoneyPickup>();
 
@@ -58,7 +62,7 @@ namespace ShopIdle.Money
             if (_billMaterial == null)
             {
                 var p = Core.ColorPalette.Instance;
-                _billMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                _billMaterial = new Material(ShopIdle.Core.ColorPalette.LitShader);
                 _billMaterial.color = p.billGreen;
                 _billMaterial.SetFloat("_Smoothness", 0.2f);
             }

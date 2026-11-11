@@ -126,8 +126,7 @@ namespace ShopIdle.Core
             grass.transform.position = new Vector3(0f, -0.05f, 0f);
             grass.transform.localScale = new Vector3(8f, 1f, 8f);
             Object.Destroy(grass.GetComponent<MeshCollider>());
-            grass.GetComponent<MeshRenderer>().material = ColorPalette.MakeLit(p.grassMint);
-            grass.GetComponent<MeshRenderer>().material.SetFloat("_Smoothness", 0.1f);
+            FloorTheme.TextureGrass(grass);
         }
 
         /// <summary>Called when expansion unlocks to retheme new areas.</summary>
@@ -136,6 +135,9 @@ namespace ShopIdle.Core
             // Zoom out camera
             var cam = Object.FindAnyObjectByType<CameraSystem.CameraFollow>();
             if (cam != null) cam.ZoomOut();
+
+            // Kitchen tiles continue into the expansion (third oven / drive-thru side)
+            FloorTheme.AddKitchenTiles("KitchenTilesExpansion", 8.15f, 19.85f);
 
             // Restyle expansion walls
             var p = ColorPalette.Instance;

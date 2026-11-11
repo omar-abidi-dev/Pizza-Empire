@@ -236,6 +236,26 @@ namespace ShopIdle.Core
 
         // ── Food Visual Factory ──
 
+        /// <summary>Pizza model thickness; stacks use it as their step.</summary>
+        public const float PizzaStackHeight = 0.08f;
+
+        /// <summary>
+        /// Vertical step between stacked food items for the current restaurant:
+        /// the pizza model's 0.08 m, or a primitive food's real height.
+        /// </summary>
+        public static float FoodStackHeight
+        {
+            get
+            {
+                if (_instance == null || _instance._restaurantIndex == 0) return PizzaStackHeight;
+                var c = _instance.CurrentConfig;
+                if (c == null) return PizzaStackHeight;
+                float h = c.foodShape == PrimitiveType.Cylinder || c.foodShape == PrimitiveType.Capsule
+                    ? c.foodScale.y * 2f : c.foodScale.y;
+                return Mathf.Max(PizzaStackHeight, h);
+            }
+        }
+
         /// <summary>Create a food item matching the current restaurant's config.</summary>
         public static GameObject CreateFoodVisual()
         {
@@ -257,7 +277,7 @@ namespace ShopIdle.Core
 
             if (_foodMaterial == null || _cachedFoodColor != color)
             {
-                _foodMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                _foodMaterial = new Material(ShopIdle.Core.ColorPalette.LitShader);
                 _foodMaterial.color = color;
                 _foodMaterial.SetFloat("_Smoothness", 0.3f);
                 _cachedFoodColor = color;

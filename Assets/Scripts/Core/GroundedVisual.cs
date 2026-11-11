@@ -25,7 +25,7 @@ namespace ShopIdle.Core
         {
             if (_visual == null) return;
             Vector3 p = _visual.position;
-            float y = FloorY - _footOffset;
+            float y = FloorY - _footOffset * _visual.lossyScale.y; // offset is in visual-local units
             if (p.y != y)
                 _visual.position = new Vector3(p.x, y, p.z);
         }

@@ -285,7 +285,7 @@ namespace ShopIdle.Upgrades
             marker.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
             Object.Destroy(marker.GetComponent<MeshCollider>());
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            var mat = new Material(ShopIdle.Core.ColorPalette.UnlitShader);
             var color = new Color(1f, 0.55f, 0f, 0.55f);
             mat.color = color;
             mat.SetFloat("_Surface", 1f);
@@ -535,7 +535,7 @@ namespace ShopIdle.Upgrades
             road.transform.localScale = new Vector3(4f, 24f, 1f);
             Object.Destroy(road.GetComponent<MeshCollider>());
 
-            var roadMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var roadMat = new Material(ShopIdle.Core.ColorPalette.LitShader);
             roadMat.color = new Color(0.25f, 0.25f, 0.25f);
             road.GetComponent<MeshRenderer>().material = roadMat;
 
@@ -546,7 +546,7 @@ namespace ShopIdle.Upgrades
             line.transform.localScale = new Vector3(0.15f, 24f, 1f);
             Object.Destroy(line.GetComponent<MeshCollider>());
 
-            var lineMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var lineMat = new Material(ShopIdle.Core.ColorPalette.LitShader);
             lineMat.color = new Color(0.95f, 0.85f, 0.15f);
             line.GetComponent<MeshRenderer>().material = lineMat;
 
@@ -559,7 +559,7 @@ namespace ShopIdle.Upgrades
                 shelf.transform.localScale = new Vector3(0.6f, 0.08f, 1.5f);
                 Object.Destroy(shelf.GetComponent<BoxCollider>());
 
-                var shelfMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                var shelfMat = new Material(ShopIdle.Core.ColorPalette.LitShader);
                 shelfMat.color = new Color(0.6f, 0.4f, 0.2f);
                 shelf.GetComponent<MeshRenderer>().material = shelfMat;
             }
@@ -575,7 +575,7 @@ namespace ShopIdle.Upgrades
             wall.transform.localScale = scale;
             wall.isStatic = true;
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var mat = new Material(ShopIdle.Core.ColorPalette.LitShader);
             mat.color = color;
             wall.GetComponent<MeshRenderer>().material = mat;
         }
@@ -602,7 +602,7 @@ namespace ShopIdle.Upgrades
             marker.transform.localScale = new Vector3(2.5f, 0.01f, 2.5f);
             Object.Destroy(marker.GetComponent<MeshCollider>());
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            var mat = new Material(ShopIdle.Core.ColorPalette.UnlitShader);
             mat.color = new Color(0.2f, 0.8f, 1f, 0.5f);
             mat.SetFloat("_Surface", 1f);
             mat.SetOverrideTag("RenderType", "Transparent");

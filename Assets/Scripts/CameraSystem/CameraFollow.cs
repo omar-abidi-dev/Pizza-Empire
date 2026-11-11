@@ -3,22 +3,35 @@ using UnityEngine;
 namespace ShopIdle.CameraSystem
 {
     /// <summary>
-    /// Orthographic isometric camera (35° X, 45° Y) that smoothly follows
-    /// the player. Supports zoom-out when new areas unlock.
+    /// Close orthographic isometric camera (35° X, 45° Y) that follows the player.
+    /// Zoom is defined by visible world width so portrait phones always see ~10 m
+    /// across; the focus point leads slightly ahead in the movement direction.
     /// </summary>
     public class CameraFollow : MonoBehaviour
     {
         [SerializeField] private Transform _target;
-        [SerializeField] private float _smoothSpeed = 6f;
-        [SerializeField] private float _defaultSize = 8f;
-        [SerializeField] private float _expandedSize = 12f;
+
+        [Header("Zoom (visible width in metres)")]
+        [SerializeField] private float _viewWidth = 10f;
+        [SerializeField] private float _expandedViewWidth = 13f;
         [SerializeField] private float _zoomSpeed = 2f;
+
+        [Header("Follow")]
+        [SerializeField] private float _followSmoothTime = 0.18f;
+        [SerializeField] private float _leadTime = 0.35f;      // seconds of movement to look ahead
+        [SerializeField] private float _maxLead = 1.5f;        // metres
+        [SerializeField] private float _leadSmoothTime = 0.4f;
 
         private static readonly Quaternion IsoRotation = Quaternion.Euler(35f, 45f, 0f);
         private const float DistanceBehind = 20f; // far enough to not clip
 
         private Camera _cam;
-        private float _targetSize;
+        private float _targetWidth;
+        private Vector3 _focus;
+        private Vector3 _focusVelocity;
+        private Vector3 _lead;
+        private Vector3 _leadVelocity;
+        private Vector3 _lastTargetPos;
         private Vector3 _shakeOffset;
 
         private void Start()
@@ -27,14 +40,13 @@ namespace ShopIdle.CameraSystem
             if (_cam == null) _cam = gameObject.AddComponent<Camera>();
 
             _cam.orthographic = true;
-            _cam.orthographicSize = _defaultSize;
             _cam.nearClipPlane = 0.1f;
             _cam.farClipPlane = 100f;
             _cam.backgroundColor = new Color(0.72f, 0.88f, 0.95f);
             _cam.clearFlags = CameraClearFlags.SolidColor;
 
-            _targetSize = _defaultSize;
-
+            _targetWidth = _viewWidth;
+            _cam.orthographicSize = SizeForWidth(_targetWidth);
             transform.rotation = IsoRotation;
 
             if (_target == null)
@@ -45,54 +57,61 @@ namespace ShopIdle.CameraSystem
             }
 
             if (_target != null)
-                transform.position = CalculatePosition(_target.position);
+            {
+                _focus = _lastTargetPos = _target.position;
+                transform.position = CalculatePosition(_focus);
+            }
         }
 
         private void LateUpdate()
         {
             if (_target == null) return;
+            float dt = Time.deltaTime;
+            if (dt <= 0f) return;
 
-            // Smooth follow
-            Vector3 desiredPos = CalculatePosition(_target.position);
-            transform.position = Vector3.Lerp(transform.position, desiredPos,
-                _smoothSpeed * Time.deltaTime) + _shakeOffset;
+            // Lead: look ahead along the target's horizontal velocity.
+            Vector3 targetPos = _target.position;
+            Vector3 velocity = (targetPos - _lastTargetPos) / dt;
+            _lastTargetPos = targetPos;
+            velocity.y = 0f;
+            Vector3 desiredLead = Vector3.ClampMagnitude(velocity * _leadTime, _maxLead);
+            _lead = Vector3.SmoothDamp(_lead, desiredLead, ref _leadVelocity, _leadSmoothTime);
 
-            // Keep exact rotation
-            transform.rotation = IsoRotation;
+            // Smooth follow of the led focus point.
+            _focus = Vector3.SmoothDamp(_focus, targetPos + _lead, ref _focusVelocity, _followSmoothTime);
+            transform.SetPositionAndRotation(CalculatePosition(_focus) + _shakeOffset, IsoRotation);
 
-            // Smooth zoom
-            if (_cam != null)
-            {
-                _cam.orthographicSize = Mathf.Lerp(
-                    _cam.orthographicSize, _targetSize, _zoomSpeed * Time.deltaTime);
-            }
+            // Width-driven zoom (adapts to portrait/landscape aspect).
+            _cam.orthographicSize = Mathf.Lerp(_cam.orthographicSize, SizeForWidth(_targetWidth), _zoomSpeed * dt);
 
             // Decay shake
-            _shakeOffset = Vector3.Lerp(_shakeOffset, Vector3.zero, 15f * Time.deltaTime);
+            _shakeOffset = Vector3.Lerp(_shakeOffset, Vector3.zero, 15f * dt);
         }
 
-        private Vector3 CalculatePosition(Vector3 targetPos)
+        private float SizeForWidth(float width) => width / (2f * Mathf.Max(0.01f, _cam.aspect));
+
+        private static Vector3 CalculatePosition(Vector3 focus)
         {
-            return targetPos - IsoRotation * Vector3.forward * DistanceBehind;
+            return focus - IsoRotation * Vector3.forward * DistanceBehind;
         }
 
         /// <summary>Zoom out to show expanded area.</summary>
         public void ZoomOut()
         {
-            _targetSize = _expandedSize;
+            _targetWidth = _expandedViewWidth;
         }
 
         /// <summary>Reset to default zoom.</summary>
         public void ZoomDefault()
         {
-            _targetSize = _defaultSize;
+            _targetWidth = _viewWidth;
         }
 
         public void Shake(float intensity = 0.3f)
         {
             var rand = Random.insideUnitSphere * intensity;
             rand.z = 0f;
-            _shakeOffset = rand;
+            _shakeOffset = transform.rotation * rand;
         }
     }
 }

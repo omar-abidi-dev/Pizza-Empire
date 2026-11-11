@@ -220,7 +220,7 @@ namespace ShopIdle.Upgrades
 
         private static Material CreateTransparentMat(Color color)
         {
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            var mat = new Material(ShopIdle.Core.ColorPalette.UnlitShader);
             mat.color = color;
             mat.SetFloat("_Surface", 1f);
             mat.SetOverrideTag("RenderType", "Transparent");

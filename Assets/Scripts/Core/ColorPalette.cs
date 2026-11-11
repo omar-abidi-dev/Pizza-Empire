@@ -102,12 +102,26 @@ namespace ShopIdle.Core
             }
         }
 
+        // ── Shaders ──
+        // Taken from base material assets in Resources so the URP shaders are always
+        // included in builds (a bare Shader.Find can return null on device → magenta).
+        private static Shader _lit, _unlit, _particle;
+
+        public static Shader LitShader => _lit ??= LoadShader("Materials/BaseLit", "Universal Render Pipeline/Lit");
+        public static Shader UnlitShader => _unlit ??= LoadShader("Materials/BaseUnlit", "Universal Render Pipeline/Unlit");
+        public static Shader ParticleShader => _particle ??= LoadShader("Materials/BaseParticleUnlit", "Universal Render Pipeline/Particles/Unlit");
+
+        private static Shader LoadShader(string resourcePath, string fallbackName)
+        {
+            var mat = Resources.Load<Material>(resourcePath);
+            return mat != null ? mat.shader : Shader.Find(fallbackName);
+        }
+
         // ── Material Helpers ──
-        private static Material _litMatCache;
 
         public static Material MakeLit(Color color)
         {
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var mat = new Material(LitShader);
             mat.color = color;
             mat.SetFloat("_Smoothness", 0.3f);
             return mat;
@@ -115,14 +129,14 @@ namespace ShopIdle.Core
 
         public static Material MakeUnlit(Color color)
         {
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            var mat = new Material(UnlitShader);
             mat.color = color;
             return mat;
         }
 
         public static Material MakeTransparent(Color color)
         {
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            var mat = new Material(UnlitShader);
             mat.color = color;
             mat.SetFloat("_Surface", 1f);
             mat.SetOverrideTag("RenderType", "Transparent");

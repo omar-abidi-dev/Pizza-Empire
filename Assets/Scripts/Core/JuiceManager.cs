@@ -142,13 +142,9 @@ namespace ShopIdle.Core
         private static Material GetParticleMat()
         {
             if (_particleMat != null) return _particleMat;
-            // Try URP particle shader first, fall back to built-in
-            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-            if (shader == null)
-                shader = Shader.Find("Particles/Standard Unlit");
-            if (shader == null)
-                shader = Shader.Find("Universal Render Pipeline/Unlit");
-            _particleMat = new Material(shader);
+            // URP particle shader, referenced via Resources so it ships in builds
+            // (the old built-in "Particles/Standard Unlit" fallback renders magenta in URP).
+            _particleMat = new Material(ColorPalette.ParticleShader);
             _particleMat.SetFloat("_Surface", 1f); // Transparent
             _particleMat.SetOverrideTag("RenderType", "Transparent");
             _particleMat.renderQueue = 3000;

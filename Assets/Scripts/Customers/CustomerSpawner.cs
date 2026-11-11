@@ -90,12 +90,14 @@ namespace ShopIdle.Customers
         {
             var crown = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             crown.name = "Crown";
-            crown.transform.SetParent(parent);
-            crown.transform.localPosition = new Vector3(0f, 1.15f, 0f);
+            // Sit on the head inside the (scaled, floor-pinned) character visual.
+            var visual = parent.Find("Visual");
+            crown.transform.SetParent(visual != null ? visual : parent, false);
+            crown.transform.localPosition = new Vector3(0f, 1.42f, 0f);
             crown.transform.localScale = new Vector3(0.35f, 0.08f, 0.35f);
             Object.Destroy(crown.GetComponent<CapsuleCollider>());
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var mat = new Material(ShopIdle.Core.ColorPalette.LitShader);
             mat.color = new Color(1f, 0.75f, 0f);
             mat.SetFloat("_Metallic", 0.8f);
             mat.SetFloat("_Smoothness", 0.9f);

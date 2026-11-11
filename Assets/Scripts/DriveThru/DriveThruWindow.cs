@@ -216,7 +216,7 @@ namespace ShopIdle.DriveThru
         {
             var car = new GameObject("DriveThruCar");
             Color color = CarColors[Random.Range(0, CarColors.Length)];
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var mat = new Material(ShopIdle.Core.ColorPalette.LitShader);
             mat.color = color;
 
             var body = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -249,7 +249,7 @@ namespace ShopIdle.DriveThru
             bg.transform.localPosition = Vector3.zero;
             bg.transform.localScale = new Vector3(0.6f, 0.6f, 0.15f);
             Object.Destroy(bg.GetComponent<SphereCollider>());
-            var bgMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var bgMat = new Material(ShopIdle.Core.ColorPalette.LitShader);
             bgMat.color = Color.white;
             bg.GetComponent<MeshRenderer>().material = bgMat;
 

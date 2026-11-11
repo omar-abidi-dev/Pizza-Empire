@@ -45,6 +45,8 @@ namespace ShopIdle.Core
             // Right arm
             CreateChild(v, "ArmR", PrimitiveType.Capsule,
                 new Vector3(0.42f, 0.55f, 0f), new Vector3(0.18f, 0.25f, 0.18f), p.playerSkin);
+
+            ScaleCharacter(v, PlayerNaturalHeight);
         }
 
         /// <summary>Build a customer with random accessory.</summary>
@@ -97,6 +99,8 @@ namespace ShopIdle.Core
             CreateChild(v, "ArmR", PrimitiveType.Capsule,
                 new Vector3(0.38f, 0.5f, 0f), new Vector3(0.14f, 0.2f, 0.14f),
                 new Color(0.95f, 0.82f, 0.7f));
+
+            ScaleCharacter(v, NpcNaturalHeight);
         }
 
         /// <summary>Build a worker with colored apron by type.</summary>
@@ -144,6 +148,8 @@ namespace ShopIdle.Core
             CreateChild(v, "ArmR", PrimitiveType.Capsule,
                 new Vector3(0.35f, 0.5f, 0f), new Vector3(0.14f, 0.2f, 0.14f),
                 new Color(0.95f, 0.82f, 0.7f));
+
+            ScaleCharacter(v, NpcNaturalHeight);
         }
 
         // ═══════════════════════════════════════
@@ -387,8 +393,8 @@ namespace ShopIdle.Core
         {
             var p = ColorPalette.Instance;
 
-            // Floor with checker pattern
-            ApplyFloorChecker(p);
+            // Floor: wooden planks, kitchen tiles, front road
+            FloorTheme.ApplyMainArea();
 
             // Walls — coral with white trim
             ApplyWallStyle("WallLeft", p);
@@ -398,30 +404,6 @@ namespace ShopIdle.Core
 
             // Lighting
             ApplyLighting();
-        }
-
-        private static void ApplyFloorChecker(ColorPalette p)
-        {
-            var floor = GameObject.Find("Floor");
-            if (floor == null) return;
-
-            // Create a procedural checker texture
-            var tex = new Texture2D(8, 8, TextureFormat.RGBA32, false);
-            tex.filterMode = FilterMode.Point;
-            tex.wrapMode = TextureWrapMode.Repeat;
-
-            Color c1 = p.floorCream;
-            Color c2 = p.floorCheckerDark;
-            for (int y = 0; y < 8; y++)
-                for (int x = 0; x < 8; x++)
-                    tex.SetPixel(x, y, (x + y) % 2 == 0 ? c1 : c2);
-            tex.Apply();
-
-            var mat = ColorPalette.MakeLit(Color.white);
-            mat.mainTexture = tex;
-            mat.mainTextureScale = new Vector2(10f, 10f);
-            mat.SetFloat("_Smoothness", 0.15f);
-            floor.GetComponent<MeshRenderer>().material = mat;
         }
 
         private static void ApplyWallStyle(string wallName, ColorPalette p)
@@ -518,6 +500,17 @@ namespace ShopIdle.Core
         {
             var oven = ovenRoot.GetComponentInChildren<Kitchen.Oven>();
             if (oven != null) oven.AlignTraySurface(surfaceWorldY);
+        }
+
+        // Characters are built in "natural" units (head top below) and scaled to a chunky 1.8 m.
+        private const float CharacterHeight = 1.8f;
+        private const float PlayerNaturalHeight = 1.61f; // cap top
+        private const float NpcNaturalHeight = 1.34f;    // customer/worker head top above the feet (1.39 - 0.05)
+
+        private static void ScaleCharacter(Transform visual, float naturalHeight)
+        {
+            float rootScale = visual.parent != null ? visual.parent.lossyScale.y : 1f;
+            visual.localScale = Vector3.one * (CharacterHeight / naturalHeight / Mathf.Max(0.0001f, rootScale));
         }
 
         /// <summary>
