@@ -62,6 +62,8 @@ namespace ShopIdle.Core
         public Color sesame = new(0.98f, 0.95f, 0.85f);
         public Color pattyBrown = new(0.45f, 0.26f, 0.16f);
         public Color tacoShell = new(0.98f, 0.78f, 0.38f);
+        public Color wallBody = new(0.88f, 0.9f, 0.91f);
+        public Color glassBlue = new(0.72f, 0.88f, 0.98f);
         public Color registerBody = new(0.45f, 0.8f, 0.82f);
         public Color registerKeys = new(0.98f, 0.96f, 0.94f);
         public Color screenDark = new(0.3f, 0.32f, 0.4f);

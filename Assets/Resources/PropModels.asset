@@ -27,6 +27,10 @@ MonoBehaviour:
   _sushi: {fileID: -6159364137706971595, guid: b25dfad3c59994b56aa3b2ad639748a6, type: 3}
   _taco: {fileID: 168734046199862205, guid: a0a5d56d5eff34f1bad35cca8202c3f1, type: 3}
   _plant: {fileID: -6525457102189925502, guid: 82901d0cfb68b41c2bc0f69fcfee4516, type: 3}
+  _postTall: {fileID: -5103873661494518379, guid: 33de1944bf7c948f7aee8d9a7510d1a8, type: 3}
+  _postLow: {fileID: 5466974429571814244, guid: 043bc7a47286f4f7595043eeea1f2300, type: 3}
+  _windowFrame: {fileID: -1605528302334424264, guid: 46c1ac93407304a24b5e03188ee7fcfb, type: 3}
+  _entrance: {fileID: 5738109889426657228, guid: 2a32fcb44f4d349ccabd53e285b1e321, type: 3}
   _plantTall: {fileID: 8809318336271205934, guid: d3fcd2bbce727407d91f39d07b2c62e0, type: 3}
   _charTorso: {fileID: 28291936544948198, guid: eb209817d6c104c548a6ceabd7dfc711, type: 3}
   _charHead: {fileID: -3235812562015038443, guid: 8cf0f8741bbee4b8294ac3ba6d5ecbc8, type: 3}

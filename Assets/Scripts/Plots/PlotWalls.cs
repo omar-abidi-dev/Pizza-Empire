@@ -17,11 +17,12 @@ namespace ShopIdle.Plots
         private const float DoorWidth = 2f;
 
         private readonly Dictionary<string, GameObject> _walls = new();
+        private readonly Dictionary<string, GameObject> _posts = new();
         private static readonly Color WallBody = new(0.88f, 0.9f, 0.91f);
         private static readonly Color WallStripe = new(0.1f, 0.6f, 0.64f);
         private static readonly Color WallCap = new(0.99f, 0.99f, 0.97f);
 
-        private Material _wallMat, _trimMat, _capMat, _glassMat;
+        private Material _wallMat, _trimMat, _capMat;
 
         public void Rebuild(HashSet<Vector2Int> owned, Vector2Int doorPlot, bool animate)
         {
@@ -36,14 +37,54 @@ namespace ShopIdle.Plots
                     if (!_walls.ContainsKey(key)) _walls[key] = BuildEdge(cell, d, door);
                 }
 
+            RemoveStale(_walls, wanted, animate);
+            RebuildPosts(wanted, animate);
+        }
+
+        private void RemoveStale(Dictionary<string, GameObject> items, HashSet<string> wanted, bool animate)
+        {
             var stale = new List<string>();
-            foreach (var key in _walls.Keys) if (!wanted.Contains(key)) stale.Add(key);
+            foreach (var key in items.Keys) if (!wanted.Contains(key)) stale.Add(key);
             foreach (var key in stale)
             {
-                if (animate) StartCoroutine(Sink(_walls[key]));
-                else Destroy(_walls[key]);
-                _walls.Remove(key);
+                if (items[key] != null)
+                {
+                    if (animate) StartCoroutine(Sink(items[key]));
+                    else Destroy(items[key]);
+                }
+                items.Remove(key);
             }
+        }
+
+        /// <summary>A post at every wall end / corner; tall where a tall (north or east) wall meets it.</summary>
+        private void RebuildPosts(HashSet<string> wallKeys, bool animate)
+        {
+            var tallAt = new Dictionary<string, (Vector3 pos, bool tall)>();
+            foreach (var key in wallKeys)
+            {
+                var parts = key.TrimEnd('D').Split(',');
+                var cell = new Vector2Int(int.Parse(parts[0]), int.Parse(parts[1]));
+                int dir = int.Parse(parts[2]);
+                Vector2Int d = PlotGrid.Dirs[dir];
+                Vector3 mid = PlotGrid.Center(cell) + new Vector3(d.x, 0f, d.y) * PlotGrid.Half;
+                Vector3 axis = d.y != 0 ? Vector3.right : Vector3.forward;
+                foreach (float s in new[] { -1f, 1f })
+                {
+                    Vector3 p = mid + axis * (s * PlotGrid.Half);
+                    string pk = $"{p.x:F1},{p.z:F1}";
+                    bool tall = dir >= 2 || (tallAt.TryGetValue(pk, out var prev) && prev.tall);
+                    tallAt[pk] = (p, tall);
+                }
+            }
+
+            var wanted = new HashSet<string>();
+            foreach (var kv in tallAt)
+            {
+                string key = kv.Key + (kv.Value.tall ? "T" : "L");
+                wanted.Add(key);
+                if (!_posts.ContainsKey(key)) _posts[key] = WallKit.Post(transform, kv.Value.pos, kv.Value.tall);
+            }
+            RemoveStale(_posts, wanted, animate);
         }
 
         private GameObject BuildEdge(Vector2Int cell, int dir, bool door)
@@ -67,6 +108,8 @@ namespace ShopIdle.Plots
             Segment(edge.transform, mid - axis * (DoorWidth + side) * 0.5f, alongX, side, height);
             Segment(edge.transform, mid + axis * (DoorWidth + side) * 0.5f, alongX, side, height);
 
+            WallKit.Entrance(edge.transform, mid);
+
             // Invisible door blocker: the CharacterController can't leave, customers walk through (no physics).
             var blocker = new GameObject("DoorBlocker");
             blocker.transform.SetParent(edge.transform, false);
@@ -89,23 +132,7 @@ namespace ShopIdle.Plots
             Block(parent, "Stripe", center + Vector3.up * (height - 0.16f), alongX, length + 0.01f, 0.12f, Thickness + 0.04f, _trimMat);
             Block(parent, "Cap", center + Vector3.up * (height + 0.03f), alongX, length + 0.02f, 0.06f, Thickness + 0.08f, _capMat);
 
-            if (height >= TallHeight && length > PlotGrid.Size) AddWindows(parent, center, alongX);
-        }
-
-        /// <summary>Two windows on the inside face of a tall wall (camera side).</summary>
-        private void AddWindows(Transform parent, Vector3 center, bool alongX)
-        {
-            _glassMat ??= Core.ColorPalette.MakeLit(new Color(0.72f, 0.88f, 0.98f));
-            Vector3 axis = alongX ? Vector3.right : Vector3.forward;
-            // Inside face points towards the plot centre: -Z for north walls, -X for east walls.
-            Vector3 inward = alongX ? Vector3.back : Vector3.left;
-            foreach (float offset in new[] { -2f, 2f })
-            {
-                Vector3 c = center + axis * offset + Vector3.up * 1.45f + inward * (Thickness * 0.5f + 0.01f);
-                Block(parent, "WindowFrame", c, alongX, 2f, 0.95f, 0.04f, _trimMat);
-                Block(parent, "WindowGlass", c + inward * 0.015f, alongX, 1.8f, 0.78f, 0.03f, _glassMat);
-                Block(parent, "WindowBar", c + inward * 0.03f, alongX, 0.06f, 0.78f, 0.03f, _trimMat);
-            }
+            if (height >= TallHeight && length > PlotGrid.Size) WallKit.Windows(parent, center, alongX, Thickness);
         }
 
         private static GameObject Block(Transform parent, string name, Vector3 pos, bool alongX,
