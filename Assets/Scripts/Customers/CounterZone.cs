@@ -20,6 +20,8 @@ namespace ShopIdle.Customers
         private float _serveTimer;
         private int _currentOrderTotal;
 
+        private const float DineInChance = 0.4f;
+
         private bool _hasCashierWorker;
         private readonly System.Collections.Generic.Dictionary<int, int> _stored = new();
         private int _storedPizzas;  // total over all types
@@ -212,18 +214,20 @@ namespace ShopIdle.Customers
                 juice.SpawnCoinBurst(customer.transform.position + Vector3.up * 1f);
             }
 
-            // 40% chance to dine in if tables exist
-            var tm = Tables.TableManager.Instance;
-            if (tm != null && Random.value < 0.4f)
+            // 40% want to eat in: take a free seat, or say so and take it away.
+            if (Random.value < DineInChance)
             {
-                var table = tm.TryReserveSeat(out int seatIndex);
+                var tm = Tables.TableManager.Instance;
+                int seatIndex = -1;
+                var table = tm != null ? tm.TryReserveSeat(out seatIndex) : null;
                 if (table != null)
                 {
-                    customer.AssignDineIn(table, seatIndex, earned,
-                        _spawner.ExitPosition);
+                    customer.AssignDineIn(table, seatIndex, earned, _spawner.ExitPosition);
                     return;
                 }
+                customer.ShowNoSeat();
             }
+            customer.CarryFood();
 
             // Normal flow: money at counter, exit
             if (_moneySpot != null && earned > 0)

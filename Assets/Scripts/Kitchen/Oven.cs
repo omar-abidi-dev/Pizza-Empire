@@ -29,6 +29,17 @@ namespace ShopIdle.Kitchen
         private int Capacity => FoodCatalog.TrayCapacity(_foodType, _maxTrayCapacity);
         public float ProduceInterval => _produceInterval;
         public int TrayCount => _trayPizzas.Count;
+        public bool IsFull => _trayPizzas.Count >= Capacity;
+
+        /// <summary>World position just above the top item of the tray stack.</summary>
+        public Vector3 StackTopWorld
+        {
+            get
+            {
+                Transform anchor = _trayAnchor != null ? _trayAnchor : transform;
+                return anchor.TransformPoint(new Vector3(0f, _trayBaseHeight + _trayPizzas.Count * StackStep, 0f));
+            }
+        }
 
         public void SetPizzaPrefab(GameObject prefab) { _pizzaPrefab = prefab; }
         public void SetTrayAnchor(Transform anchor) { _trayAnchor = anchor; }
@@ -62,6 +73,11 @@ namespace ShopIdle.Kitchen
         private float _produceTimer;
         private float _pickupTimer;
         private Player.PlayerStack _playerInRange;
+
+        private void Start()
+        {
+            if (GetComponent<MaxTag>() == null) gameObject.AddComponent<MaxTag>();
+        }
 
         private void Update()
         {

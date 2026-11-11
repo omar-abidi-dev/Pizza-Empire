@@ -32,10 +32,7 @@ namespace ShopIdle.Customers
         private float _eatTimer;
         private bool _isDining;
 
-        // Emoji reaction
-        private GameObject _emojiObj;
-        private float _emojiTimer;
-        private const float EmojiDuration = 1.5f;
+        private int _mainType;   // the food this customer ordered most (carried out when leaving)
 
         // Patience (for angry emoji / leaving)
         private float _waitTimer;
@@ -57,6 +54,8 @@ namespace ShopIdle.Customers
             _order = new int[Kitchen.Menu.Count];
             for (int i = 0; i < pizzasWanted; i++) _order[Kitchen.Menu.RandomType()]++;
             _pizzasWanted = pizzasWanted;
+            _mainType = 0;
+            for (int t = 1; t < _order.Length; t++) if (_order[t] > _order[_mainType]) _mainType = t;
             _pizzasReceived = 0;
             _isServed = false;
             _isVip = isVip;
@@ -91,10 +90,19 @@ namespace ShopIdle.Customers
                 _speechBubble.SetActive(false);
         }
 
-        /// <summary>Show a happy emoji when fully served.</summary>
-        public void ShowHappyEmoji()
+        /// <summary>Show a happy face when fully served.</summary>
+        public void ShowHappyEmoji() => UI.PopBubble.Emoji(transform, UI.EmojiTextures.Happy);
+
+        /// <summary>Wanted to eat in but every seat is taken (or there are no tables yet).</summary>
+        public void ShowNoSeat() => UI.PopBubble.Text(transform, "No seat!");
+
+        /// <summary>Hold the order in both hands while walking out (take-away).</summary>
+        public void CarryFood()
         {
-            ShowEmoji("\u2665", new Color(1f, 0.3f, 0.3f)); // heart (in the TMP font)
+            var food = Kitchen.FoodCatalog.Create(_mainType);
+            food.transform.SetParent(transform, false);
+            food.transform.localPosition = new Vector3(0f, 1.0f, 0.42f);
+            food.transform.localRotation = Quaternion.identity;
         }
 
         public void AssignDineIn(Tables.DineInTable table, int seatIndex,
@@ -112,17 +120,6 @@ namespace ShopIdle.Customers
 
         private void Update()
         {
-            // Emoji lifetime
-            if (_emojiObj != null)
-            {
-                _emojiTimer -= Time.deltaTime;
-                if (_emojiTimer <= 0f)
-                {
-                    Destroy(_emojiObj);
-                    _emojiObj = null;
-                }
-            }
-
             if (_hasTarget)
             {
                 MoveToward();
@@ -149,7 +146,7 @@ namespace ShopIdle.Customers
         private void LeaveAngry()
         {
             _leftAngry = true;
-            ShowEmoji("\u0021", new Color(1f, 0.2f, 0.1f)); // exclamation
+            UI.PopBubble.Emoji(transform, UI.EmojiTextures.Angry);
             MarkServed();
 
             // Remove from queue
@@ -160,26 +157,6 @@ namespace ShopIdle.Customers
             var spawner = Object.FindAnyObjectByType<CustomerSpawner>();
             if (spawner != null)
                 SetTarget(spawner.ExitPosition);
-        }
-
-        private void ShowEmoji(string emoji, Color color)
-        {
-            if (_emojiObj != null) Destroy(_emojiObj);
-
-            _emojiObj = new GameObject("Emoji");
-            _emojiObj.transform.SetParent(transform);
-            _emojiObj.transform.localPosition = new Vector3(0f, 2.2f, 0f);
-            _emojiObj.AddComponent<UI.Billboard>();
-
-            var tmp = _emojiObj.AddComponent<TextMeshPro>();
-            tmp.text = emoji;
-            tmp.fontSize = 8f;
-            tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color = color;
-            tmp.fontStyle = FontStyles.Bold;
-            tmp.rectTransform.sizeDelta = new Vector2(2f, 2f);
-
-            _emojiTimer = EmojiDuration;
         }
 
         private void MoveToward()
@@ -217,6 +194,7 @@ namespace ShopIdle.Customers
             if (_eatTimer < 5f) return;
 
             _isDining = false;
+            ShowHappyEmoji();
             if (_dineTable != null)
                 _dineTable.CustomerFinished(_dineSeat, _dineMoneyAmount);
             SetTarget(_exitPosition);
