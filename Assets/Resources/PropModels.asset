@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PropModels
   m_EditorClassIdentifier: Assembly-CSharp::ShopIdle.Core.PropModels
   _counter: {fileID: -561301830214302231, guid: 9908226f6104640fb850166b014340c2, type: 3}
-  _diningTable: {fileID: 0}
+  _diningTable: {fileID: 1717506770882490512, guid: 22ff0fc19bf1745c6b19953163a927ca, type: 3}
   _chair: {fileID: 0}
   _trashBin: {fileID: 0}
   _driveThruBooth: {fileID: 0}

@@ -406,30 +406,8 @@ namespace ShopIdle.Upgrades
             var tableObj = new GameObject(name);
             tableObj.transform.position = position;
 
-            var top = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            top.name = "TableTop";
-            top.transform.SetParent(tableObj.transform);
-            top.transform.localPosition = new Vector3(0f, 0.5f, 0f);
-            top.transform.localScale = new Vector3(1.2f, 0.08f, 0.8f);
-            Object.Destroy(top.GetComponent<BoxCollider>());
-
-            var topMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            topMat.color = new Color(0.6f, 0.4f, 0.2f);
-            top.GetComponent<MeshRenderer>().material = topMat;
-
-            var leg = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            leg.name = "TableLeg";
-            leg.transform.SetParent(tableObj.transform);
-            leg.transform.localPosition = new Vector3(0f, 0.25f, 0f);
-            leg.transform.localScale = new Vector3(0.15f, 0.25f, 0.15f);
-            Object.Destroy(leg.GetComponent<CapsuleCollider>());
-
-            var legMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            legMat.color = new Color(0.45f, 0.3f, 0.15f);
-            leg.GetComponent<MeshRenderer>().material = legMat;
-
-            CreateChair(tableObj.transform, new Vector3(-0.9f, 0f, 0f));
-            CreateChair(tableObj.transform, new Vector3(0.9f, 0f, 0f));
+            // Table + chairs (imported models, primitive fallback)
+            Core.VisualFactory.BuildTableVisual(tableObj.transform);
 
             var col = tableObj.AddComponent<BoxCollider>();
             col.isTrigger = true;
@@ -441,29 +419,6 @@ namespace ShopIdle.Upgrades
             var tm = Tables.TableManager.Instance;
             if (tm != null)
                 tm.RegisterTable(table);
-        }
-
-        private void CreateChair(Transform parent, Vector3 localPos)
-        {
-            var seat = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            seat.name = "Chair";
-            seat.transform.SetParent(parent);
-            seat.transform.localPosition = localPos + new Vector3(0f, 0.3f, 0f);
-            seat.transform.localScale = new Vector3(0.4f, 0.06f, 0.4f);
-            Object.Destroy(seat.GetComponent<BoxCollider>());
-
-            var seatMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            seatMat.color = new Color(0.5f, 0.35f, 0.18f);
-            seat.GetComponent<MeshRenderer>().material = seatMat;
-
-            var back = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            back.name = "ChairBack";
-            back.transform.SetParent(parent);
-            float backX = localPos.x > 0 ? localPos.x + 0.17f : localPos.x - 0.17f;
-            back.transform.localPosition = new Vector3(backX, 0.5f, 0f);
-            back.transform.localScale = new Vector3(0.06f, 0.35f, 0.35f);
-            Object.Destroy(back.GetComponent<BoxCollider>());
-            back.GetComponent<MeshRenderer>().material = seatMat;
         }
 
         private void ApplyHireCleaner()

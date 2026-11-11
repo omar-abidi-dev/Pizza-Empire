@@ -206,7 +206,7 @@ namespace ShopIdle.Core
             var p = ColorPalette.Instance;
 
             // Only add if not already built
-            if (root.Find("TableTopNew") != null) return;
+            if (root.Find("TableTopNew") != null || root.Find("TableModel") != null) return;
 
             // Remove old basic table visuals
             var oldTop = root.Find("TableTop");
@@ -214,14 +214,22 @@ namespace ShopIdle.Core
             var oldLeg = root.Find("TableLeg");
             if (oldLeg != null) Object.Destroy(oldLeg.gameObject);
 
-            // Rounded table top (cylinder = round)
-            CreateChild(root, "TableTopNew", PrimitiveType.Cylinder,
-                new Vector3(0f, 0.52f, 0f), new Vector3(1.0f, 0.04f, 1.0f), p.tableWood);
+            var model = PropModels.Instance != null ? PropModels.Instance.DiningTable : null;
+            if (model != null)
+            {
+                SpawnModel(model, root, "TableModel", 0f);
+            }
+            else
+            {
+                // Rounded table top (cylinder = round)
+                CreateChild(root, "TableTopNew", PrimitiveType.Cylinder,
+                    new Vector3(0f, 0.52f, 0f), new Vector3(1.0f, 0.04f, 1.0f), p.tableWood);
 
-            // Center leg
-            CreateChild(root, "TableLegNew", PrimitiveType.Cylinder,
-                new Vector3(0f, 0.26f, 0f), new Vector3(0.12f, 0.26f, 0.12f),
-                new Color(p.tableWood.r * 0.8f, p.tableWood.g * 0.8f, p.tableWood.b * 0.8f));
+                // Center leg
+                CreateChild(root, "TableLegNew", PrimitiveType.Cylinder,
+                    new Vector3(0f, 0.26f, 0f), new Vector3(0.12f, 0.26f, 0.12f),
+                    new Color(p.tableWood.r * 0.8f, p.tableWood.g * 0.8f, p.tableWood.b * 0.8f));
+            }
 
             // Rebuild chairs
             var oldChairs = new System.Collections.Generic.List<Transform>();
