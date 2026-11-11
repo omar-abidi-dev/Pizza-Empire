@@ -246,6 +246,14 @@ namespace ShopIdle.Core
         {
             var p = ColorPalette.Instance;
 
+            // Imported model faces +Z at yaw 0; turn it to face the table centre.
+            var model = PropModels.Instance != null ? PropModels.Instance.Chair : null;
+            if (model != null)
+            {
+                SpawnModel(model, parent, "ChairModel", localPos.x < 0f ? 90f : -90f, localPos);
+                return;
+            }
+
             // Seat (rounded cube)
             var seat = CreateChild(parent, "ChairNew", PrimitiveType.Cube,
                 localPos + new Vector3(0f, 0.3f, 0f), new Vector3(0.35f, 0.06f, 0.35f), p.chairSeat);
