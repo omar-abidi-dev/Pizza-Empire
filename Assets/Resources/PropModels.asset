@@ -21,4 +21,4 @@ MonoBehaviour:
   _pizza: {fileID: -3943383787695814915, guid: 07faef0720a7c4d14992261562aa45af, type: 3}
   _burgerGrill: {fileID: 5997613934761501031, guid: eeea1eca37b754c2e8d73ba811a462e3, type: 3}
   _sushiCounter: {fileID: 2443453254059287477, guid: bce562a92e149428f83325c47d8a6ad8, type: 3}
-  _tacoCart: {fileID: 0}
+  _tacoCart: {fileID: -8689577546660687235, guid: 2d4c93b434a254c47b99b2305910cfaa, type: 3}
