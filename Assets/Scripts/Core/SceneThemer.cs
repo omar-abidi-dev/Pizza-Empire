@@ -46,6 +46,9 @@ namespace ShopIdle.Core
             // Tables
             ApplyTableVisuals();
 
+            // Decorative props (trash bin)
+            PropDecor.PlaceAll();
+
             // Add grass outside
             CreateOutdoorGrass();
         }

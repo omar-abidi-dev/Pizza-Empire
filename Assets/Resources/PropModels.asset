@@ -15,7 +15,7 @@ MonoBehaviour:
   _counter: {fileID: -561301830214302231, guid: 9908226f6104640fb850166b014340c2, type: 3}
   _diningTable: {fileID: 1717506770882490512, guid: 22ff0fc19bf1745c6b19953163a927ca, type: 3}
   _chair: {fileID: 41284089101563332, guid: 1d70999500d9b4c028af327004cb2076, type: 3}
-  _trashBin: {fileID: 0}
+  _trashBin: {fileID: 8930059882378767298, guid: cdcd53631df384015824d1d9ab0c3ff4, type: 3}
   _driveThruBooth: {fileID: 0}
   _cashStack: {fileID: 0}
   _pizza: {fileID: 0}
