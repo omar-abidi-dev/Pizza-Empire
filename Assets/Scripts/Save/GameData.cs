@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ShopIdle.Save
 {
@@ -17,5 +18,30 @@ namespace ShopIdle.Save
         public int restaurantIndex;
         public int restaurantsCompleted;
         public long totalMoneyEarned;
+
+        // Prestige
+        public int prestigeLevel;
+
+        // Gems
+        public int gems;
+
+        // Daily quests
+        public string dailyQuestDate;          // "yyyy-MM-dd"
+        public List<DailyQuestData> dailyQuests = new();
+
+        // Stats for quest tracking
+        public int todayCustomersServed;
+        public int todayMoneyCollected;
+        public int todayTablesCleaned;
+    }
+
+    [Serializable]
+    public class DailyQuestData
+    {
+        public int questType;  // maps to DailyQuestType enum
+        public int target;
+        public int progress;
+        public int gemReward;
+        public bool claimed;
     }
 }

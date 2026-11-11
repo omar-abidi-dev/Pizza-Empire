@@ -6,7 +6,7 @@ namespace ShopIdle.UI
 {
     /// <summary>
     /// Restaurant progress bar displayed below the money counter.
-    /// Shows restaurant name and upgrade completion (e.g. "8/14").
+    /// Shows restaurant name, upgrade completion, and prestige info.
     /// </summary>
     public class ProgressUI : MonoBehaviour
     {
@@ -87,7 +87,12 @@ namespace ShopIdle.UI
             _progressText.outlineWidth = 0.2f;
             _progressText.outlineColor = new Color32(0, 0, 0, 200);
 
-            // Restaurant name (above the bar)
+            // Restaurant name + prestige info (above the bar)
+            var pm = Core.PrestigeManager.Instance;
+            string displayName = restaurantName;
+            if (pm != null && pm.PrestigeLevel > 0)
+                displayName += $"  <color=#FFD633>City {pm.PrestigeLevel + 1} x{pm.IncomeMultiplier:F1}</color>";
+
             var nameObj = new GameObject("RestaurantName");
             nameObj.transform.SetParent(canvas.transform, false);
             var nameRect = nameObj.AddComponent<RectTransform>();
@@ -96,11 +101,12 @@ namespace ShopIdle.UI
             nameRect.offsetMin = Vector2.zero;
             nameRect.offsetMax = Vector2.zero;
             _nameText = nameObj.AddComponent<TextMeshProUGUI>();
-            _nameText.text = restaurantName;
+            _nameText.text = displayName;
             _nameText.fontSize = 20;
             _nameText.alignment = TextAlignmentOptions.Center;
             _nameText.color = new Color(1f, 0.9f, 0.5f);
             _nameText.fontStyle = FontStyles.Bold;
+            _nameText.richText = true;
         }
     }
 }

@@ -17,6 +17,7 @@ namespace ShopIdle.Customers
         private Vector3 _targetPosition;
         private bool _hasTarget;
         private bool _isServed;
+        private bool _isVip;
         private System.Action<Customer> _onReachedExit;
 
         // Dine-in state
@@ -27,14 +28,29 @@ namespace ShopIdle.Customers
         private float _eatTimer;
         private bool _isDining;
 
+        // Emoji reaction
+        private GameObject _emojiObj;
+        private float _emojiTimer;
+        private const float EmojiDuration = 1.5f;
+
+        // Patience (for angry emoji / leaving)
+        private float _waitTimer;
+        private const float MaxWaitTime = 30f;
+        private bool _leftAngry;
+
         public int PizzasRemaining => _pizzasWanted - _pizzasReceived;
         public bool IsFullyServed => _pizzasReceived >= _pizzasWanted;
+        public bool IsVip => _isVip;
+        public bool LeftAngry => _leftAngry;
 
-        public void Setup(int pizzasWanted)
+        public void Setup(int pizzasWanted, bool isVip = false)
         {
             _pizzasWanted = pizzasWanted;
             _pizzasReceived = 0;
             _isServed = false;
+            _isVip = isVip;
+            _waitTimer = 0f;
+            _leftAngry = false;
             UpdateOrderDisplay();
         }
 
@@ -62,6 +78,12 @@ namespace ShopIdle.Customers
                 _speechBubble.SetActive(false);
         }
 
+        /// <summary>Show a happy emoji when fully served.</summary>
+        public void ShowHappyEmoji()
+        {
+            ShowEmoji("\u2764", new Color(1f, 0.3f, 0.3f)); // heart
+        }
+
         public void AssignDineIn(Tables.DineInTable table, int seatIndex,
             int moneyAmount, Vector3 exitPos)
         {
@@ -77,6 +99,17 @@ namespace ShopIdle.Customers
 
         private void Update()
         {
+            // Emoji lifetime
+            if (_emojiObj != null)
+            {
+                _emojiTimer -= Time.deltaTime;
+                if (_emojiTimer <= 0f)
+                {
+                    Destroy(_emojiObj);
+                    _emojiObj = null;
+                }
+            }
+
             if (_hasTarget)
             {
                 MoveToward();
@@ -84,7 +117,57 @@ namespace ShopIdle.Customers
             }
 
             if (_isDining)
+            {
                 HandleDining();
+                return;
+            }
+
+            // Patience timer (only while waiting in queue, not served)
+            if (!_isServed && !_leftAngry)
+            {
+                _waitTimer += Time.deltaTime;
+                if (_waitTimer >= MaxWaitTime)
+                {
+                    LeaveAngry();
+                }
+            }
+        }
+
+        private void LeaveAngry()
+        {
+            _leftAngry = true;
+            ShowEmoji("\u0021", new Color(1f, 0.2f, 0.1f)); // exclamation
+            MarkServed();
+
+            // Remove from queue
+            var queue = Object.FindAnyObjectByType<CustomerQueue>();
+            if (queue != null)
+                queue.RemoveCustomer(this);
+
+            // Walk to exit
+            var spawner = Object.FindAnyObjectByType<CustomerSpawner>();
+            if (spawner != null)
+                SetTarget(spawner.ExitPosition);
+        }
+
+        private void ShowEmoji(string emoji, Color color)
+        {
+            if (_emojiObj != null) Destroy(_emojiObj);
+
+            _emojiObj = new GameObject("Emoji");
+            _emojiObj.transform.SetParent(transform);
+            _emojiObj.transform.localPosition = new Vector3(0f, 2.2f, 0f);
+            _emojiObj.AddComponent<UI.Billboard>();
+
+            var tmp = _emojiObj.AddComponent<TextMeshPro>();
+            tmp.text = emoji;
+            tmp.fontSize = 8f;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.color = color;
+            tmp.fontStyle = FontStyles.Bold;
+            tmp.rectTransform.sizeDelta = new Vector2(2f, 2f);
+
+            _emojiTimer = EmojiDuration;
         }
 
         private void MoveToward()

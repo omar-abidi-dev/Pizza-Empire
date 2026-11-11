@@ -41,8 +41,23 @@ namespace ShopIdle.Save
 
         private void Start()
         {
+            // Bootstrap new managers
+            EnsureManager<Core.PrestigeManager>("PrestigeManager");
+            EnsureManager<Core.GemManager>("GemManager");
+            EnsureManager<Core.DailyQuestManager>("DailyQuestManager");
+            EnsureManager<Core.RushHourManager>("RushHourManager");
+
             // Delay initialization flag to next frame so all managers finish Start()
             StartCoroutine(SetInitializedNextFrame());
+        }
+
+        private void EnsureManager<T>(string name) where T : MonoBehaviour
+        {
+            if (UnityEngine.Object.FindAnyObjectByType<T>() == null)
+            {
+                var obj = new GameObject(name);
+                obj.AddComponent<T>();
+            }
         }
 
         private System.Collections.IEnumerator SetInitializedNextFrame()
@@ -126,7 +141,11 @@ namespace ShopIdle.Save
                 ? rm.CurrentConfig.moneyPerItem / 10f
                 : 1f;
 
-            return Mathf.RoundToInt(incomePerMinute * minutes * economyScale);
+            // Apply prestige multiplier
+            var pm = Core.PrestigeManager.Instance;
+            float prestigeMult = pm != null ? pm.IncomeMultiplier : 1f;
+
+            return Mathf.RoundToInt(incomePerMinute * minutes * economyScale * prestigeMult);
         }
 
         private void GatherState()
@@ -158,6 +177,16 @@ namespace ShopIdle.Save
             var rm = Core.RestaurantManager.Instance;
             if (rm != null)
                 _data.restaurantIndex = rm.RestaurantIndex;
+
+            // Prestige
+            var pm = Core.PrestigeManager.Instance;
+            if (pm != null)
+                _data.prestigeLevel = pm.PrestigeLevel;
+
+            // Gems
+            var gm = Core.GemManager.Instance;
+            if (gm != null)
+                _data.gems = gm.Gems;
         }
 
         public void DeleteSave()

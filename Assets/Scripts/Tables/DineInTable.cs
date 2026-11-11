@@ -123,6 +123,9 @@ namespace ShopIdle.Tables
         {
             _seatDirty[index] = false;
 
+            // Track table cleaning for daily quests
+            Core.DailyQuestManager.Instance?.TrackTableCleaned();
+
             if (_dirtyPlates[index] != null)
             {
                 var plate = _dirtyPlates[index];

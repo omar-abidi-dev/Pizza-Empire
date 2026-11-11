@@ -37,6 +37,16 @@ namespace ShopIdle.Customers
             }
         }
 
+        /// <summary>Remove a specific customer (e.g. angry customer leaving).</summary>
+        public void RemoveCustomer(Customer customer)
+        {
+            int idx = _queue.IndexOf(customer);
+            if (idx < 0) return;
+            _queue.RemoveAt(idx);
+            for (int i = idx; i < _queue.Count; i++)
+                SendToSlot(_queue[i], i);
+        }
+
         private void SendToSlot(Customer customer, int index)
         {
             Vector3 pos = GetSlotPosition(index);

@@ -141,6 +141,52 @@ namespace ShopIdle.Upgrades
             _activeZone = zoneObj.AddComponent<UpgradeZone>();
             _activeZone.Init("NEXT RESTAURANT", cost, isNextRestaurant: true);
             _activeZone.OnPurchased += OnNextRestaurantPurchased;
+
+            // Show prestige button if eligible (restaurant 4+)
+            var pm = Core.PrestigeManager.Instance;
+            if (pm != null && pm.CanPrestige())
+                CreatePrestigeButton();
+        }
+
+        private void CreatePrestigeButton()
+        {
+            var canvas = Object.FindAnyObjectByType<Canvas>();
+            if (canvas == null) return;
+
+            var btnObj = new GameObject("PrestigeButton");
+            btnObj.transform.SetParent(canvas.transform, false);
+            var rect = btnObj.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.2f, 0.12f);
+            rect.anchorMax = new Vector2(0.8f, 0.17f);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            var bg = btnObj.AddComponent<UnityEngine.UI.Image>();
+            bg.color = new Color(0.8f, 0.6f, 0.1f, 0.9f);
+
+            var btn = btnObj.AddComponent<UnityEngine.UI.Button>();
+            btn.targetGraphic = bg;
+            btn.onClick.AddListener(() =>
+            {
+                var pm = Core.PrestigeManager.Instance;
+                if (pm != null) pm.DoPrestige();
+            });
+
+            var labelObj = new GameObject("Label");
+            labelObj.transform.SetParent(btnObj.transform, false);
+            var labelRect = labelObj.AddComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+            var pm = Core.PrestigeManager.Instance;
+            float nextMult = pm != null ? 1f + 0.5f * (pm.PrestigeLevel + 1) : 1.5f;
+            var tmp = labelObj.AddComponent<TMPro.TextMeshProUGUI>();
+            tmp.text = $"NEW CITY (x{nextMult:F1} income)";
+            tmp.fontSize = 24;
+            tmp.alignment = TMPro.TextAlignmentOptions.Center;
+            tmp.color = Color.white;
+            tmp.fontStyle = TMPro.FontStyles.Bold;
         }
 
         private void OnZonePurchased()

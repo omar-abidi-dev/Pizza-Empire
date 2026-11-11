@@ -174,9 +174,25 @@ namespace ShopIdle.DriveThru
             {
                 car.Served = true;
                 if (car.Bubble != null) car.Bubble.SetActive(false);
-                int earned = car.PizzasWanted * MoneyPerItem;
+                int price = MoneyPerItem;
+
+                // Rush hour pays x2
+                var rush = Core.RushHourManager.Instance;
+                if (rush != null && rush.IsRushing)
+                    price = Mathf.RoundToInt(price * rush.PayMultiplier);
+
+                // Prestige income multiplier
+                var pm = Core.PrestigeManager.Instance;
+                if (pm != null)
+                    price = Mathf.RoundToInt(price * pm.IncomeMultiplier);
+
+                int earned = car.PizzasWanted * price;
                 if (_moneySpot != null && earned > 0)
                     _moneySpot.SpawnBills(earned);
+
+                // Quest tracking
+                Core.DailyQuestManager.Instance?.TrackServeCustomer();
+                Core.DailyQuestManager.Instance?.TrackMoneyCollected(earned);
             }
         }
 

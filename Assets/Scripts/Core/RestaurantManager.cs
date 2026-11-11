@@ -32,6 +32,22 @@ namespace ShopIdle.Core
             50, 80, 120, 200, 250, 300, 350, 400, 600, 700, 1000, 1200, 1500, 1800
         };
 
+        // Procedural restaurant name parts
+        private static readonly string[] NamePrefixes =
+        {
+            "Golden", "Royal", "Happy", "Lucky", "Cosmic", "Mega", "Super",
+            "Tasty", "Magic", "Crispy", "Starlight", "Rainbow"
+        };
+        private static readonly string[] NameFoods =
+        {
+            "Noodle", "Waffle", "Dumpling", "Kebab", "Crepe", "Pretzel",
+            "Ramen", "Donut", "Pancake", "Cookie"
+        };
+        private static readonly string[] NameSuffixes =
+        {
+            "House", "Kitchen", "Bistro", "Shack", "Den", "Corner", "Express"
+        };
+
         public RestaurantConfig CurrentConfig => GetConfig(_restaurantIndex);
         public int RestaurantIndex => _restaurantIndex;
         public bool IsTransitioning => _transitioning;
@@ -143,31 +159,64 @@ namespace ShopIdle.Core
 
         // ── Config Access ──
 
-        /// <summary>Get config for any restaurant index. Cycles themes, scales economy.</summary>
+        /// <summary>Get config for any restaurant index. First 4 are handmade, rest are procedural.</summary>
         public RestaurantConfig GetConfig(int index)
         {
             if (index < _templates.Length)
                 return _templates[index];
 
-            // Infinite generation: cycle theme, scale economy
-            int theme = index % _templates.Length;
-            var t = _templates[theme];
+            // Procedural generation beyond restaurant 4
             float scale = Mathf.Pow(CostGrowth, index);
 
+            // Generate random-looking but deterministic values from index
+            var rng = new System.Random(index * 7919); // deterministic seed
+
+            // Random food type
+            var shapes = new[] { PrimitiveType.Cylinder, PrimitiveType.Sphere, PrimitiveType.Cube, PrimitiveType.Capsule };
+            var shape = shapes[rng.Next(shapes.Length)];
+
+            // Random pastel color palette
+            Color foodColor = RandomPastel(rng);
+            Color floorColor = RandomPastel(rng, 0.7f);
+            Color wallColor = RandomPastel(rng, 0.75f);
+            Color ovenColor = new Color(
+                (float)rng.NextDouble() * 0.5f + 0.1f,
+                (float)rng.NextDouble() * 0.3f + 0.1f,
+                (float)rng.NextDouble() * 0.3f + 0.1f);
+
+            // Generated name: "Golden Noodle #5" style
+            string prefix = NamePrefixes[rng.Next(NamePrefixes.Length)];
+            string food = NameFoods[rng.Next(NameFoods.Length)];
+            string suffix = NameSuffixes[rng.Next(NameSuffixes.Length)];
+            string genName = $"{prefix} {food} {suffix} #{index - 3}";
+
             var c = ScriptableObject.CreateInstance<RestaurantConfig>();
-            int cycle = index / _templates.Length + 1;
-            c.restaurantName = $"{t.restaurantName} {cycle}";
-            c.foodName = t.foodName;
-            c.foodColor = t.foodColor;
-            c.foodShape = t.foodShape;
-            c.foodScale = t.foodScale;
-            c.floorColor = t.floorColor;
-            c.wallColor = t.wallColor;
-            c.ovenColor = t.ovenColor;
+            c.restaurantName = genName;
+            c.foodName = food;
+            c.foodColor = foodColor;
+            c.foodShape = shape;
+            c.foodScale = shape switch
+            {
+                PrimitiveType.Sphere => new Vector3(0.3f, 0.3f, 0.3f),
+                PrimitiveType.Cube => new Vector3(0.3f, 0.15f, 0.2f),
+                PrimitiveType.Capsule => new Vector3(0.2f, 0.15f, 0.35f),
+                _ => new Vector3(0.4f, 0.05f, 0.4f)
+            };
+            c.floorColor = floorColor;
+            c.wallColor = wallColor;
+            c.ovenColor = ovenColor;
             c.moneyPerItem = Mathf.RoundToInt(10f * scale);
             c.driveThruMoneyPerItem = Mathf.RoundToInt(15f * scale);
             c.startingBonus = Mathf.RoundToInt(100f * scale);
             return c;
+        }
+
+        private static Color RandomPastel(System.Random rng, float saturation = 0.5f)
+        {
+            float h = (float)rng.NextDouble();
+            float s = saturation * 0.3f + (float)rng.NextDouble() * 0.3f;
+            float v = 0.75f + (float)rng.NextDouble() * 0.2f;
+            return Color.HSVToRGB(h, s, v);
         }
 
         /// <summary>Upgrade cost for a given index at the current restaurant.</summary>
@@ -220,6 +269,74 @@ namespace ShopIdle.Core
             StartCoroutine(TransitionSequence());
         }
 
+        /// <summary>Called by PrestigeManager to reset back to restaurant 0.</summary>
+        public void PrestigeReset()
+        {
+            if (_transitioning) return;
+            StartCoroutine(PrestigeTransitionSequence());
+        }
+
+        private IEnumerator PrestigeTransitionSequence()
+        {
+            _transitioning = true;
+
+            var fadeCanvas = CreateFadeCanvas();
+            DontDestroyOnLoad(fadeCanvas);
+            var fadeImg = fadeCanvas.transform.Find("Fade").GetComponent<UnityEngine.UI.Image>();
+
+            // Fade to black
+            float t = 0f;
+            while (t < 0.6f)
+            {
+                t += Time.deltaTime;
+                fadeImg.color = new Color(0f, 0f, 0f, Mathf.Clamp01(t / 0.6f));
+                yield return null;
+            }
+
+            // Show prestige text
+            var textObj = new GameObject("PrestigeTitle");
+            textObj.transform.SetParent(fadeCanvas.transform, false);
+            var textRect = textObj.AddComponent<RectTransform>();
+            textRect.anchorMin = new Vector2(0.1f, 0.42f);
+            textRect.anchorMax = new Vector2(0.9f, 0.58f);
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+
+            var pm = PrestigeManager.Instance;
+            int level = pm != null ? pm.PrestigeLevel : 1;
+            float mult = pm != null ? pm.IncomeMultiplier : 1.5f;
+
+            var tmp = textObj.AddComponent<TextMeshProUGUI>();
+            tmp.text = $"NEW CITY!\nCity {level + 1} — x{mult:F1} income";
+            tmp.fontSize = 48;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.color = new Color(1f, 0.85f, 0.3f);
+            tmp.fontStyle = FontStyles.Bold;
+
+            yield return new WaitForSeconds(2f);
+
+            _restaurantIndex = 0;
+            _foodMaterial = null;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
+            yield return null;
+            yield return null;
+
+            // Fade out
+            t = 0f;
+            while (t < 0.6f)
+            {
+                t += Time.deltaTime;
+                float a = 1f - Mathf.Clamp01(t / 0.6f);
+                fadeImg.color = new Color(0f, 0f, 0f, a);
+                if (tmp != null) tmp.color = new Color(1f, 0.85f, 0.3f, a);
+                yield return null;
+            }
+
+            Destroy(fadeCanvas);
+            _transitioning = false;
+        }
+
         private IEnumerator TransitionSequence()
         {
             _transitioning = true;
@@ -240,6 +357,9 @@ namespace ShopIdle.Core
                 sm.Data.playerZ = 0f;
                 sm.SaveGame();
             }
+
+            // Award gems for completing a restaurant
+            GemManager.Instance?.AddGems(5 + _restaurantIndex * 2);
 
             // Juice
             AudioManager.Instance?.Play(SoundType.Fanfare);

@@ -117,7 +117,7 @@ namespace ShopIdle.Customers
             });
 
             customer.ReceivePizza();
-            _currentOrderTotal += MoneyPerItem;
+            _currentOrderTotal += GetItemPrice(customer);
 
             if (customer.IsFullyServed)
                 CompleteOrder(customer);
@@ -138,10 +138,32 @@ namespace ShopIdle.Customers
             });
 
             customer.ReceivePizza();
-            _currentOrderTotal += MoneyPerItem;
+            _currentOrderTotal += GetItemPrice(customer);
 
             if (customer.IsFullyServed)
                 CompleteOrder(customer);
+        }
+
+        /// <summary>Calculate item price with VIP (x5) and rush hour (x2) multipliers.</summary>
+        private int GetItemPrice(Customer customer)
+        {
+            int price = MoneyPerItem;
+
+            // VIP pays x5
+            if (customer.IsVip)
+                price *= 5;
+
+            // Rush hour pays x2
+            var rush = Core.RushHourManager.Instance;
+            if (rush != null && rush.IsRushing)
+                price = Mathf.RoundToInt(price * rush.PayMultiplier);
+
+            // Prestige income multiplier
+            var pm = Core.PrestigeManager.Instance;
+            if (pm != null)
+                price = Mathf.RoundToInt(price * pm.IncomeMultiplier);
+
+            return price;
         }
 
         private void CompleteOrder(Customer customer)
@@ -150,13 +172,25 @@ namespace ShopIdle.Customers
             _currentOrderTotal = 0;
             _queue.RemoveFirst();
 
+            // Quest tracking
+            var qm = Core.DailyQuestManager.Instance;
+            qm?.TrackServeCustomer();
+            qm?.TrackMoneyCollected(earned);
+            if (customer.IsVip) qm?.TrackVIPServed();
+
+            // Emoji reaction
+            customer.ShowHappyEmoji();
+
             // Juice: sound + floating text + sparkle
             Core.AudioManager.Instance?.Play(Core.SoundType.ChaChing);
             var juice = Core.JuiceManager.Instance;
             if (juice != null)
             {
                 Vector3 textPos = customer.transform.position + Vector3.up * 2.5f;
-                juice.SpawnFloatingText($"+${earned}", textPos, new Color(0.2f, 0.9f, 0.3f));
+                Color textColor = customer.IsVip
+                    ? new Color(1f, 0.85f, 0.2f)
+                    : new Color(0.2f, 0.9f, 0.3f);
+                juice.SpawnFloatingText($"+${earned}", textPos, textColor);
                 juice.SpawnCoinBurst(customer.transform.position + Vector3.up * 1f);
             }
 
