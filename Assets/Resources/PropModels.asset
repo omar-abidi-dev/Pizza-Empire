@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: PropModels
   m_EditorClassIdentifier: Assembly-CSharp::ShopIdle.Core.PropModels
   _counter: {fileID: 758080045841956773, guid: 6d7c31143f0a042dc806c96960d4feee, type: 3}
-  _diningTable: {fileID: 1717506770882490512, guid: 22ff0fc19bf1745c6b19953163a927ca, type: 3}
-  _chair: {fileID: 41284089101563332, guid: 1d70999500d9b4c028af327004cb2076, type: 3}
-  _trashBin: {fileID: 8930059882378767298, guid: cdcd53631df384015824d1d9ab0c3ff4, type: 3}
+  _diningTable: {fileID: -3817057742266095, guid: 4d31d7baa2e2d4eb08e3044f25ce2b54, type: 3}
+  _chair: {fileID: -4465295950508531660, guid: 4b034d751c32f4aec84468d2a4d1694f, type: 3}
+  _trashBin: {fileID: -3533187820757611626, guid: ea84bc1d9183f482ea2de23304e74414, type: 3}
   _driveThruBooth: {fileID: 8443490459599152085, guid: ccd065d3cd32e4e84abaee0eb896748a, type: 3}
   _cashStack: {fileID: 7459078819058896015, guid: a4d27dd5488a244d88e984ce1efaddf9, type: 3}
   _pizza: {fileID: -3943383787695814915, guid: 07faef0720a7c4d14992261562aa45af, type: 3}
@@ -23,6 +23,8 @@ MonoBehaviour:
   _sushiCounter: {fileID: 2443453254059287477, guid: bce562a92e149428f83325c47d8a6ad8, type: 3}
   _tacoCart: {fileID: -8689577546660687235, guid: 2d4c93b434a254c47b99b2305910cfaa, type: 3}
   _oven: {fileID: 1445215324196499299, guid: a55b4a12a3579481cba3a21eb4dfda84, type: 3}
+  _plant: {fileID: -6525457102189925502, guid: 82901d0cfb68b41c2bc0f69fcfee4516, type: 3}
+  _plantTall: {fileID: 8809318336271205934, guid: d3fcd2bbce727407d91f39d07b2c62e0, type: 3}
   _charTorso: {fileID: 28291936544948198, guid: eb209817d6c104c548a6ceabd7dfc711, type: 3}
   _charHead: {fileID: -3235812562015038443, guid: 8cf0f8741bbee4b8294ac3ba6d5ecbc8, type: 3}
   _charArm: {fileID: -4779432365422373493, guid: 43a968f3b466644deab965cac6677743, type: 3}

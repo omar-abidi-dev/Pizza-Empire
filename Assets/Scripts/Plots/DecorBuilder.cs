@@ -23,6 +23,12 @@ namespace ShopIdle.Plots
                 col.center = new Vector3(0f, 1f, 0f);
                 Tables.TableManager.Instance.RegisterTable(table.AddComponent<Tables.DineInTable>());
             }
+            var m = Core.PropModels.Instance;
+            if (m != null)
+            {
+                Core.PropDecor.Plant(m.PlantTall, parent, PlotGrid.Local(cell, -3.3f, 3.3f));
+                Core.PropDecor.Plant(m.Plant, parent, PlotGrid.Local(cell, 3.3f, -0.4f));
+            }
         }
 
         /// <summary>Shelves of boxes and a packing table (raises how much the player can carry).</summary>

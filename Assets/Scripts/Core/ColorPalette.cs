@@ -54,6 +54,10 @@ namespace ShopIdle.Core
         public Color counterFront = new(0.12f, 0.6f, 0.64f);
         public Color counterPanel = new(0.9f, 0.95f, 0.95f);
         public Color pizzaBox = new(0.85f, 0.66f, 0.42f);
+        public Color chairShell = new(0.98f, 0.7f, 0.3f);
+        public Color potClay = new(0.86f, 0.5f, 0.35f);
+        public Color leafGreen = new(0.35f, 0.72f, 0.4f);
+        public Color leafLight = new(0.5f, 0.82f, 0.45f);
         public Color registerBody = new(0.45f, 0.8f, 0.82f);
         public Color registerKeys = new(0.98f, 0.96f, 0.94f);
         public Color screenDark = new(0.3f, 0.32f, 0.4f);

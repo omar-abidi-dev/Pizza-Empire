@@ -22,6 +22,9 @@ namespace ShopIdle.Core
         [SerializeField] private GameObject _tacoCart;
         [SerializeField] private GameObject _oven;
 
+        [SerializeField] private GameObject _plant;
+        [SerializeField] private GameObject _plantTall;
+
         [Header("Character kit (rig parts)")]
         [SerializeField] private GameObject _charTorso;
         [SerializeField] private GameObject _charHead;
@@ -44,6 +47,8 @@ namespace ShopIdle.Core
         public GameObject SushiCounter => _sushiCounter;
         public GameObject TacoCart => _tacoCart;
         public GameObject Oven => _oven;
+        public GameObject Plant => _plant;
+        public GameObject PlantTall => _plantTall;
         public GameObject CharTorso => _charTorso;
         public GameObject CharHead => _charHead;
         public GameObject CharArm => _charArm;
