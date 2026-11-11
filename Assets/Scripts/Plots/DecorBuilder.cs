@@ -49,7 +49,7 @@ namespace ShopIdle.Plots
 
         public static void Garden(Transform parent, Vector2Int cell)
         {
-            Vector2[] trees = { new(-2.3f, 2f), new(2.2f, 0.4f), new(-1.6f, -1.8f) };
+            Vector2[] trees = { new(-2.3f, 2f), new(2.2f, 0.4f), new(-0.6f, -1.6f) };
             foreach (var t in trees)
             {
                 Vector3 pos = PlotGrid.Local(cell, t.x, t.y);
@@ -80,7 +80,7 @@ namespace ShopIdle.Plots
                 new Vector3(1.2f, 0.4f, 1.2f), p.tableWood);
             PlotVisuals.Prop(parent, PrimitiveType.Cylinder, PlotGrid.Local(cell, 1.2f, -0.6f) + Vector3.up * 0.9f,
                 new Vector3(0.18f, 0.1f, 0.18f), Color.white);
-            PlotVisuals.Solid(parent, PrimitiveType.Cube, PlotGrid.Local(cell, -1.6f, -0.6f) + Vector3.up * 0.25f,
+            PlotVisuals.Solid(parent, PrimitiveType.Cube, PlotGrid.Local(cell, -1.6f, 0f) + Vector3.up * 0.25f,
                 new Vector3(0.6f, 0.5f, 1.8f), p.chairSeat);
         }
 

@@ -33,6 +33,7 @@ namespace ShopIdle.Save
         public int xp;
         public int objectiveIndex;
         public int objectiveProgress;
+        public bool tutorialDone;
 
         // Daily quests
         public string dailyQuestDate;          // "yyyy-MM-dd"

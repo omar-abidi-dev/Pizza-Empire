@@ -56,16 +56,22 @@ namespace ShopIdle.UI
         {
             var ot = Core.ObjectiveTracker.Instance;
             if (ot != null) ot.Changed += Refresh;
+            var tm = Core.TutorialManager.Instance;
+            if (tm != null) tm.Changed += Refresh;
             Refresh();
         }
 
         private void OnDestroy()
         {
             if (Core.ObjectiveTracker.Instance != null) Core.ObjectiveTracker.Instance.Changed -= Refresh;
+            if (Core.TutorialManager.Instance != null) Core.TutorialManager.Instance.Changed -= Refresh;
         }
 
         private void Refresh()
         {
+            var tm = Core.TutorialManager.Instance;
+            if (tm != null && tm.IsActive) { ShowTutorial(tm); return; }
+
             var ot = Core.ObjectiveTracker.Instance;
             if (ot == null) { gameObject.SetActive(false); return; }
             _title.text = ot.Title;
@@ -80,6 +86,17 @@ namespace ShopIdle.UI
             UIFactory.SetFill(_fill, (float)ot.Progress / ot.Target);
             if (_lastTitle != null && _lastTitle != ot.Title) _pop = 0.3f;
             _lastTitle = ot.Title;
+        }
+
+        /// <summary>Tutorial steps replace the objective until the guide is finished.</summary>
+        private void ShowTutorial(Core.TutorialManager tm)
+        {
+            _title.text = tm.Title;
+            _count.text = tm.ProgressText;
+            _icon.text = tm.StepNumber.ToString();
+            UIFactory.SetFill(_fill, tm.Progress01);
+            if (_lastTitle != null && _lastTitle != tm.Title) _pop = 0.3f;
+            _lastTitle = tm.Title;
         }
 
         private void Update()

@@ -4,7 +4,8 @@ namespace ShopIdle.Upgrades
 {
     /// <summary>
     /// Big bouncing arrow over the nearest buy pad the player can fully pay for,
-    /// so there is always an obvious next goal.
+    /// so there is always an obvious next goal. The tutorial can point it at anything
+    /// with <see cref="SetFocus"/>.
     /// </summary>
     public class GuideArrow : MonoBehaviour
     {
@@ -16,7 +17,21 @@ namespace ShopIdle.Upgrades
 
         private Transform _visual;
         private Transform _player;
-        private UpgradeZone _target;
+        private Transform _target;
+        private float _targetHeight = Height;
+
+        private static Transform _focus;
+        private static float _focusHeight;
+
+        /// <summary>Point at <paramref name="target"/> (hovering <paramref name="height"/> m up) instead of pads; null clears.</summary>
+        public static void SetFocus(Transform target, float height = 2.2f)
+        {
+            _focus = target;
+            _focusHeight = height;
+        }
+
+        /// <summary>Where the arrow points right now (null when hidden).</summary>
+        public static Transform CurrentTarget { get; private set; }
         private float _retarget;
         private float _t;
 
@@ -40,7 +55,14 @@ namespace ShopIdle.Upgrades
             if (_retarget <= 0f)
             {
                 _retarget = RetargetInterval;
-                _target = PickTarget();
+                if (_focus != null) { _target = _focus; _targetHeight = _focusHeight; }
+                else
+                {
+                    var pad = PickTarget();
+                    _target = pad != null ? pad.transform : null;
+                    _targetHeight = Height;
+                }
+                CurrentTarget = _target;
             }
 
             bool show = _target != null;
@@ -48,8 +70,8 @@ namespace ShopIdle.Upgrades
             if (!show) return;
 
             _t += Time.deltaTime;
-            float y = Height + Mathf.Abs(Mathf.Sin(_t * 4f)) * Bounce;
-            transform.SetPositionAndRotation(_target.transform.position + Vector3.up * y,
+            float y = _targetHeight + Mathf.Abs(Mathf.Sin(_t * 4f)) * Bounce;
+            transform.SetPositionAndRotation(_target.position + Vector3.up * y,
                 Quaternion.Euler(0f, _t * 90f, 0f));
         }
 

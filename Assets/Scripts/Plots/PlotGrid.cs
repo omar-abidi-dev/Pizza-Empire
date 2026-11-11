@@ -32,14 +32,14 @@ namespace ShopIdle.Plots
         /// <summary>
         /// Where the buy pad for <paramref name="locked"/> sits: just inside <paramref name="owned"/>
         /// against their shared wall, off-centre so it clears doors and queues. Plot layouts keep
-        /// these spots free (x 1.2..3.6 by north/south walls, z -3.2..-0.8 by east/west walls).
+        /// these spots free (x 1.2..3.6 by north/south walls, z -3.6..-1.2 by east/west walls).
         /// </summary>
         public static Vector3 TileSpot(Vector2Int owned, Vector2Int locked)
         {
             Vector3 mid = (Center(owned) + Center(locked)) * 0.5f;
             bool horizontalEdge = owned.x == locked.x;
             Vector3 inward = (Center(owned) - Center(locked)).normalized * 1.15f; // whole pad inside the owned plot
-            return mid + inward + (horizontalEdge ? new Vector3(2.4f, 0f, 0f) : new Vector3(0f, 0f, -2f));
+            return mid + inward + (horizontalEdge ? new Vector3(2.4f, 0f, 0f) : new Vector3(0f, 0f, -2.4f));
         }
     }
 
