@@ -17,32 +17,33 @@ namespace ShopIdle.Core
         {
             var p = ColorPalette.Instance;
             ClearChildren(root);
+            var v = CreateGroundedVisualRoot(root);
 
             // Body (capsule)
-            var body = CreateChild(root, "Body", PrimitiveType.Capsule,
+            var body = CreateChild(v, "Body", PrimitiveType.Capsule,
                 new Vector3(0f, 0.5f, 0f), new Vector3(0.7f, 0.5f, 0.7f), p.playerSkin);
 
             // Head (sphere)
-            CreateChild(root, "Head", PrimitiveType.Sphere,
+            CreateChild(v, "Head", PrimitiveType.Sphere,
                 new Vector3(0f, 1.25f, 0f), new Vector3(0.55f, 0.55f, 0.55f), p.playerSkin);
 
             // Cap (flattened cylinder on head)
-            var cap = CreateChild(root, "Cap", PrimitiveType.Cylinder,
+            var cap = CreateChild(v, "Cap", PrimitiveType.Cylinder,
                 new Vector3(0f, 1.55f, 0.02f), new Vector3(0.5f, 0.06f, 0.5f), p.playerCapTeal);
             // Cap brim (stretched cube)
-            CreateChild(root, "CapBrim", PrimitiveType.Cube,
+            CreateChild(v, "CapBrim", PrimitiveType.Cube,
                 new Vector3(0f, 1.48f, 0.18f), new Vector3(0.48f, 0.03f, 0.25f), p.playerCapTeal);
 
             // Apron (cube front body)
-            CreateChild(root, "Apron", PrimitiveType.Cube,
+            CreateChild(v, "Apron", PrimitiveType.Cube,
                 new Vector3(0f, 0.45f, 0.2f), new Vector3(0.55f, 0.5f, 0.08f), p.playerApron);
 
             // Left arm
-            CreateChild(root, "ArmL", PrimitiveType.Capsule,
+            CreateChild(v, "ArmL", PrimitiveType.Capsule,
                 new Vector3(-0.42f, 0.55f, 0f), new Vector3(0.18f, 0.25f, 0.18f), p.playerSkin);
 
             // Right arm
-            CreateChild(root, "ArmR", PrimitiveType.Capsule,
+            CreateChild(v, "ArmR", PrimitiveType.Capsule,
                 new Vector3(0.42f, 0.55f, 0f), new Vector3(0.18f, 0.25f, 0.18f), p.playerSkin);
         }
 
@@ -52,13 +53,14 @@ namespace ShopIdle.Core
             var p = ColorPalette.Instance;
             Color bodyColor = isVip ? p.vipGold : p.customerBase;
             ClearChildren(root);
+            var v = CreateGroundedVisualRoot(root, NpcFootOffset);
 
             // Body
-            CreateChild(root, "Body", PrimitiveType.Capsule,
+            CreateChild(v, "Body", PrimitiveType.Capsule,
                 new Vector3(0f, 0.5f, 0f), new Vector3(0.6f, 0.45f, 0.6f), bodyColor);
 
             // Head
-            CreateChild(root, "Head", PrimitiveType.Sphere,
+            CreateChild(v, "Head", PrimitiveType.Sphere,
                 new Vector3(0f, 1.15f, 0f), new Vector3(0.48f, 0.48f, 0.48f),
                 new Color(0.95f, 0.82f, 0.7f));
 
@@ -67,32 +69,32 @@ namespace ShopIdle.Core
             switch (acc)
             {
                 case 0: // Glasses
-                    CreateChild(root, "Glasses", PrimitiveType.Cube,
+                    CreateChild(v, "Glasses", PrimitiveType.Cube,
                         new Vector3(0f, 1.18f, 0.22f), new Vector3(0.4f, 0.06f, 0.04f),
                         new Color(0.2f, 0.2f, 0.25f));
                     break;
                 case 1: // Hat
-                    CreateChild(root, "Hat", PrimitiveType.Cylinder,
+                    CreateChild(v, "Hat", PrimitiveType.Cylinder,
                         new Vector3(0f, 1.42f, 0f), new Vector3(0.4f, 0.08f, 0.4f),
                         new Color(0.65f, 0.45f, 0.3f));
                     break;
                 case 2: // Hair bun
-                    CreateChild(root, "HairBun", PrimitiveType.Sphere,
+                    CreateChild(v, "HairBun", PrimitiveType.Sphere,
                         new Vector3(0f, 1.42f, -0.08f), new Vector3(0.22f, 0.22f, 0.22f),
                         new Color(0.3f, 0.2f, 0.15f));
                     break;
                 case 3: // Nothing extra — just taller hair
-                    CreateChild(root, "Hair", PrimitiveType.Cube,
+                    CreateChild(v, "Hair", PrimitiveType.Cube,
                         new Vector3(0f, 1.4f, 0f), new Vector3(0.35f, 0.12f, 0.35f),
                         new Color(0.25f, 0.18f, 0.12f));
                     break;
             }
 
             // Small arms
-            CreateChild(root, "ArmL", PrimitiveType.Capsule,
+            CreateChild(v, "ArmL", PrimitiveType.Capsule,
                 new Vector3(-0.38f, 0.5f, 0f), new Vector3(0.14f, 0.2f, 0.14f),
                 new Color(0.95f, 0.82f, 0.7f));
-            CreateChild(root, "ArmR", PrimitiveType.Capsule,
+            CreateChild(v, "ArmR", PrimitiveType.Capsule,
                 new Vector3(0.38f, 0.5f, 0f), new Vector3(0.14f, 0.2f, 0.14f),
                 new Color(0.95f, 0.82f, 0.7f));
         }
@@ -111,34 +113,35 @@ namespace ShopIdle.Core
             };
 
             ClearChildren(root);
+            var v = CreateGroundedVisualRoot(root, NpcFootOffset);
 
             // Body
-            CreateChild(root, "Body", PrimitiveType.Capsule,
+            CreateChild(v, "Body", PrimitiveType.Capsule,
                 new Vector3(0f, 0.5f, 0f), new Vector3(0.6f, 0.45f, 0.6f),
                 new Color(0.92f, 0.88f, 0.82f));
 
             // Head
-            CreateChild(root, "Head", PrimitiveType.Sphere,
+            CreateChild(v, "Head", PrimitiveType.Sphere,
                 new Vector3(0f, 1.15f, 0f), new Vector3(0.45f, 0.45f, 0.45f),
                 new Color(0.95f, 0.82f, 0.7f));
 
             // Apron
-            CreateChild(root, "Apron", PrimitiveType.Cube,
+            CreateChild(v, "Apron", PrimitiveType.Cube,
                 new Vector3(0f, 0.4f, 0.18f), new Vector3(0.5f, 0.45f, 0.08f), apronColor);
 
             // Chef hat (if chef)
             if (workerType == "Chef")
             {
-                CreateChild(root, "ChefHat", PrimitiveType.Cylinder,
+                CreateChild(v, "ChefHat", PrimitiveType.Cylinder,
                     new Vector3(0f, 1.45f, 0f), new Vector3(0.35f, 0.18f, 0.35f),
                     Color.white);
             }
 
             // Small arms
-            CreateChild(root, "ArmL", PrimitiveType.Capsule,
+            CreateChild(v, "ArmL", PrimitiveType.Capsule,
                 new Vector3(-0.35f, 0.5f, 0f), new Vector3(0.14f, 0.2f, 0.14f),
                 new Color(0.95f, 0.82f, 0.7f));
-            CreateChild(root, "ArmR", PrimitiveType.Capsule,
+            CreateChild(v, "ArmR", PrimitiveType.Capsule,
                 new Vector3(0.35f, 0.5f, 0f), new Vector3(0.14f, 0.2f, 0.14f),
                 new Color(0.95f, 0.82f, 0.7f));
         }
@@ -153,16 +156,19 @@ namespace ShopIdle.Core
             var p = ColorPalette.Instance;
             ClearChildren(root);
 
-            // Restaurant-specific cooking station model (grill / sushi counter / taco cart).
-            // Cook side faces +Z like the oven door; null for pizza and procedural restaurants.
+            // Restaurant-specific cooking station model (oven / grill / sushi counter / taco cart).
+            // Front (oven arch, grill knobs…) faces -Z towards the pickup marker; procedural
+            // restaurants keep the primitive oven.
             var rm = RestaurantManager.Instance;
-            var station = PropModels.Instance != null && rm != null
-                ? PropModels.Instance.StationFor(rm.RestaurantIndex) : null;
+            int index = rm != null ? rm.RestaurantIndex : 0;
+            var station = PropModels.Instance != null ? PropModels.Instance.StationFor(index) : null;
             if (station != null)
             {
-                SpawnModel(station, root, "StationModel", 0f);
+                SpawnModel(station, root, "StationModel", 180f);
+                AlignOvenTray(root, FloorY + PropModels.StationSurfaceHeight(index));
                 return;
             }
+            AlignOvenTray(root, root.position.y + PrimitiveOvenTop);
 
             // Main body
             CreateChild(root, "OvenBody", PrimitiveType.Cube,
@@ -504,6 +510,30 @@ namespace ShopIdle.Core
         }
 
         private const float FloorY = 0f;
+        private const float NpcFootOffset = 0.05f; // customer/worker body capsule bottom (0.5 - 0.45)
+        private const float PrimitiveOvenTop = 0.95f; // OvenTop surface, local to the oven root
+
+        /// <summary>Rest the oven's tray items on the station surface (no-op if no Oven yet).</summary>
+        private static void AlignOvenTray(Transform ovenRoot, float surfaceWorldY)
+        {
+            var oven = ovenRoot.GetComponentInChildren<Kitchen.Oven>();
+            if (oven != null) oven.AlignTraySurface(surfaceWorldY);
+        }
+
+        /// <summary>
+        /// Character parts go under a "Visual" container that <see cref="GroundedVisual"/> pins to
+        /// the floor, so feet touch the ground whatever height the root sits at
+        /// (CharacterController centre, NavMeshAgent baseOffset, static placement).
+        /// </summary>
+        private static Transform CreateGroundedVisualRoot(Transform root, float footOffset = 0f)
+        {
+            var visual = new GameObject("Visual").transform;
+            visual.SetParent(root, false);
+            var grounded = root.GetComponent<GroundedVisual>();
+            if (grounded == null) grounded = root.gameObject.AddComponent<GroundedVisual>();
+            grounded.SetVisual(visual, footOffset);
+            return visual;
+        }
 
         private static void DestroyColl(GameObject obj)
         {
@@ -523,7 +553,7 @@ namespace ShopIdle.Core
                     n == "Hat" || n == "HairBun" || n == "Hair" || n == "ChefHat" ||
                     n == "OvenBody" || n == "OvenTop" || n == "OvenDoor" ||
                     n == "OvenGlow" || n == "Handle" || n == "CounterBase" ||
-                    n == "CounterTop" || n == "Cabin" || n.EndsWith("Model"))
+                    n == "CounterTop" || n == "Cabin" || n == "Visual" || n.EndsWith("Model"))
                 {
                     toRemove.Add(child);
                 }

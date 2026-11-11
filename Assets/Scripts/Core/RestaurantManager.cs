@@ -264,7 +264,13 @@ namespace ShopIdle.Core
             }
             obj.GetComponent<MeshRenderer>().sharedMaterial = _foodMaterial;
 
-            return obj;
+            // Wrap so the pivot is at the food's base (like the pizza model) and it rests on surfaces.
+            var root = new GameObject("Food");
+            obj.transform.SetParent(root.transform, false);
+            float halfHeight = shape == PrimitiveType.Cylinder || shape == PrimitiveType.Capsule
+                ? scale.y : scale.y * 0.5f; // cylinder/capsule meshes are 2 units tall
+            obj.transform.localPosition = new Vector3(0f, halfHeight, 0f);
+            return root;
         }
 
         // ── Restaurant Transition ──

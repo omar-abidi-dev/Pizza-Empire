@@ -29,6 +29,18 @@ namespace ShopIdle.Kitchen
         public void SetTrayAnchor(Transform anchor) { _trayAnchor = anchor; }
         public void SetProduceInterval(float interval) { _produceInterval = interval; }
 
+        /// <summary>Move the tray anchor so the first item rests on a surface at <paramref name="surfaceWorldY"/>.</summary>
+        public void AlignTraySurface(float surfaceWorldY)
+        {
+            if (_trayAnchor == null)
+            {
+                _trayAnchor = new GameObject("TrayAnchor").transform;
+                _trayAnchor.SetParent(transform, false);
+            }
+            Vector3 p = _trayAnchor.position;
+            _trayAnchor.position = new Vector3(p.x, surfaceWorldY - _trayBaseHeight * _trayAnchor.lossyScale.y, p.z);
+        }
+
         public Transform TakeTopPizza()
         {
             if (_trayPizzas.Count == 0) return null;

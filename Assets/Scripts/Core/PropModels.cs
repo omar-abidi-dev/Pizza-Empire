@@ -20,6 +20,7 @@ namespace ShopIdle.Core
         [SerializeField] private GameObject _burgerGrill;
         [SerializeField] private GameObject _sushiCounter;
         [SerializeField] private GameObject _tacoCart;
+        [SerializeField] private GameObject _oven;
 
         public GameObject Counter => _counter;
         public GameObject DiningTable => _diningTable;
@@ -31,6 +32,7 @@ namespace ShopIdle.Core
         public GameObject BurgerGrill => _burgerGrill;
         public GameObject SushiCounter => _sushiCounter;
         public GameObject TacoCart => _tacoCart;
+        public GameObject Oven => _oven;
 
         private static PropModels _instance;
         private static bool _loaded;
@@ -52,10 +54,24 @@ namespace ShopIdle.Core
         /// <summary>Cooking-station model for a restaurant index (null = use the primitive oven).</summary>
         public GameObject StationFor(int restaurantIndex) => restaurantIndex switch
         {
+            0 => _oven,
             1 => _burgerGrill,
             2 => _sushiCounter,
             3 => _tacoCart,
             _ => null
+        };
+
+        /// <summary>
+        /// Height (m above the floor) of the surface food rests on for each station model,
+        /// measured from the model scripts: oven roof, griddle plate, conveyor rails, cart worktop.
+        /// </summary>
+        public static float StationSurfaceHeight(int restaurantIndex) => restaurantIndex switch
+        {
+            0 => 1.12f,
+            1 => 0.90f,
+            2 => 0.93f,
+            3 => 0.95f,
+            _ => 0f
         };
     }
 }

@@ -36,6 +36,7 @@ namespace ShopIdle.Core
         public Color ovenBody = new(0.38f, 0.35f, 0.4f);
         public Color ovenDoor = new(0.28f, 0.26f, 0.3f);
         public Color ovenGlow = new(1f, 0.5f, 0.15f);
+        public Color ovenShell = new(0.93f, 0.42f, 0.35f);
         public Color counterTop = new(0.92f, 0.9f, 0.85f);
         public Color counterBase = new(0.7f, 0.55f, 0.35f);
         public Color tableWood = new(0.72f, 0.55f, 0.35f);

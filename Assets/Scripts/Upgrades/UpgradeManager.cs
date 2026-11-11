@@ -260,8 +260,6 @@ namespace ShopIdle.Upgrades
             var obstacle = oven.AddComponent<NavMeshObstacle>();
             obstacle.carving = true;
 
-            Core.VisualFactory.BuildOvenVisual(oven.transform);
-
             var ovenComp = oven.AddComponent<Kitchen.Oven>();
 
             var tray = new GameObject("TrayAnchor");
@@ -271,6 +269,9 @@ namespace ShopIdle.Upgrades
             ovenComp.SetTrayAnchor(tray.transform);
             if (firstComp != null)
                 ovenComp.SetPizzaPrefab(firstComp.PizzaPrefab);
+
+            // Visual after the Oven + tray exist so the tray can align to the station top.
+            Core.VisualFactory.BuildOvenVisual(oven.transform);
 
             CreateOvenMarker(oven.transform.position);
         }
@@ -634,8 +635,6 @@ namespace ShopIdle.Upgrades
             var obstacle = oven.AddComponent<NavMeshObstacle>();
             obstacle.carving = true;
 
-            Core.VisualFactory.BuildOvenVisual(oven.transform);
-
             var ovenComp = oven.AddComponent<Kitchen.Oven>();
 
             var tray = new GameObject("TrayAnchor");
@@ -645,6 +644,9 @@ namespace ShopIdle.Upgrades
             ovenComp.SetTrayAnchor(tray.transform);
             if (firstComp != null)
                 ovenComp.SetPizzaPrefab(firstComp.PizzaPrefab);
+
+            // Visual after the Oven + tray exist so the tray can align to the station top.
+            Core.VisualFactory.BuildOvenVisual(oven.transform);
 
             CreateOvenMarker(oven.transform.position);
             RebakeNavMesh();
