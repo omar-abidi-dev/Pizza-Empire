@@ -51,6 +51,8 @@ namespace ShopIdle.Plots
             _progress.Init(Core.RestaurantManager.Instance != null
                 ? Core.RestaurantManager.Instance.CurrentConfig.restaurantName : "Pizza Palace");
 
+            Upgrades.GuideArrow.Create();
+
             Refresh(false);
             _surface.BuildNavMesh();
             PlotBuilder.FlushHires();
@@ -113,7 +115,8 @@ namespace ShopIdle.Plots
                     }
 
             float doorZ = PlotGrid.Center(door).z - PlotGrid.Half;
-            _spawner?.SetDoor(new Vector3(-0.6f, 0f, doorZ - 5f), new Vector3(0.6f, 0f, doorZ - 5f));
+            _spawner?.SetDoor(new Vector3(-0.6f, 0f, doorZ - 4.5f), new Vector3(0.6f, 0f, doorZ - 4.5f));
+            Core.FloorTheme.PlaceFrontRoad(doorZ - 7.5f);
             PlotEffects.Apply(_plots, _owned);
             _progress?.Show(_owned.Count);
         }

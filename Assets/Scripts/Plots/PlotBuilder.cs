@@ -20,11 +20,11 @@ namespace ShopIdle.Plots
             {
                 case PlotKind.Ovens:
                 case PlotKind.Kitchen:
-                    KitchenBuilder.Station(root, PlotGrid.Local(cell, -1.8f, 1.6f), plot.param);
-                    KitchenBuilder.Station(root, PlotGrid.Local(cell, 1.8f, 1.6f), plot.param);
+                    KitchenBuilder.Station(root, PlotGrid.Local(cell, -1.8f, 1f), plot.param);
+                    KitchenBuilder.Station(root, PlotGrid.Local(cell, 1.8f, 1f), plot.param);
                     break;
                 case PlotKind.Counter:
-                    KitchenBuilder.Counter(root, PlotGrid.Local(cell, -2.3f, 0.6f), spawner); // clear of the door walkway
+                    KitchenBuilder.Counter(root, PlotGrid.Local(cell, -1f, 0.6f), spawner); // queue clear of the west buy pad
                     break;
                 case PlotKind.Dining: DecorBuilder.Dining(root, cell); break;
                 case PlotKind.Storage: DecorBuilder.Storage(root, cell); break;
@@ -51,7 +51,7 @@ namespace ShopIdle.Plots
             PlotKind.Ovens or PlotKind.Kitchen => Core.FloorTheme.Surface.Tiles,
             PlotKind.Garden => Core.FloorTheme.Surface.Grass,
             PlotKind.Parking or PlotKind.DriveThru => Core.FloorTheme.Surface.Asphalt,
-            _ => Core.FloorTheme.Surface.Wood
+            _ => Core.FloorTheme.Surface.Dining
         };
     }
 }

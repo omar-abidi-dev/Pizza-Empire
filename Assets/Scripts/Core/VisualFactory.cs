@@ -443,15 +443,16 @@ namespace ShopIdle.Core
                 dirLight.type = LightType.Directional;
             }
 
-            dirLight.transform.rotation = Quaternion.Euler(45f, 30f, 0f);
-            dirLight.color = new Color(1f, 0.97f, 0.9f); // warm
-            dirLight.intensity = 1.2f;
+            // Bright, flat toy lighting: soft short shadows, strong ambient fill.
+            dirLight.transform.rotation = Quaternion.Euler(55f, -35f, 0f);
+            dirLight.color = new Color(1f, 0.98f, 0.94f);
+            dirLight.intensity = 1.05f;
             dirLight.shadows = LightShadows.Soft;
-            dirLight.shadowStrength = 0.4f;
+            dirLight.shadowStrength = 0.3f;
 
             // Ambient light
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.85f, 0.82f, 0.78f);
+            RenderSettings.ambientLight = new Color(0.9f, 0.9f, 0.92f);
             RenderSettings.ambientIntensity = 1.0f;
 
             // Sky color

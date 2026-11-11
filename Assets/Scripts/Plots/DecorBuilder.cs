@@ -6,7 +6,7 @@ namespace ShopIdle.Plots
     public static class DecorBuilder
     {
         // Positions keep clear of the price-tile spots on the plot edges (see PlotGrid.TileSpot).
-        private static readonly Vector2[] TableSpots = { new(-1.8f, 1.5f), new(1.8f, 1.5f), new(-1.8f, -1.2f), new(1.8f, -1.2f) };
+        private static readonly Vector2[] TableSpots = { new(-1.8f, 2f), new(-1.8f, 0f), new(1f, 0f), new(-0.4f, -2.3f) };
 
         public static void Dining(Transform parent, Vector2Int cell)
         {
@@ -65,7 +65,7 @@ namespace ShopIdle.Plots
                 Vector3 pos = PlotGrid.Local(cell, Mathf.Cos(a) * (0.6f + i * 0.2f), Mathf.Sin(a) * (0.6f + i * 0.2f));
                 PlotVisuals.Prop(parent, PrimitiveType.Sphere, pos + Vector3.up * 0.2f, Vector3.one * 0.45f, flowers[i % 3]);
             }
-            PlotVisuals.Solid(parent, PrimitiveType.Cube, PlotGrid.Local(cell, 0.6f, 2.4f) + Vector3.up * 0.25f,
+            PlotVisuals.Solid(parent, PrimitiveType.Cube, PlotGrid.Local(cell, -0.2f, 2.4f) + Vector3.up * 0.25f,
                 new Vector3(1.6f, 0.5f, 0.5f), Core.ColorPalette.Instance.tableWood);
         }
 
@@ -89,7 +89,7 @@ namespace ShopIdle.Plots
             Color[] cars = { new(0.92f, 0.55f, 0.55f), new(0.55f, 0.65f, 0.92f), new(0.65f, 0.88f, 0.65f) };
             for (int i = 0; i < 3; i++)
             {
-                Vector3 pos = PlotGrid.Local(cell, -2.4f + i * 2.4f, 1.4f);
+                Vector3 pos = PlotGrid.Local(cell, -2.4f + i * 2.4f, 0.6f);
                 PlotVisuals.Solid(parent, PrimitiveType.Cube, pos + Vector3.up * 0.4f, new Vector3(1.4f, 0.6f, 2.4f), cars[i]);
                 PlotVisuals.Prop(parent, PrimitiveType.Cube, pos + new Vector3(0f, 0.85f, -0.2f), new Vector3(1.2f, 0.45f, 1.2f), cars[i]);
             }

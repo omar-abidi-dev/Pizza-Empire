@@ -53,7 +53,7 @@ namespace ShopIdle.Plots
             zoneObj.transform.SetParent(transform, false);
             zoneObj.transform.position = PlotGrid.TileSpot(ownedNeighbour, Cell);
             _zone = zoneObj.AddComponent<Upgrades.UpgradeZone>();
-            _zone.Init("New Plot", price);
+            _zone.Init("New Area", price);
             _zone.OnPurchased += () => onBought(this);
         }
     }

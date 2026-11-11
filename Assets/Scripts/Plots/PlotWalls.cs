@@ -13,11 +13,15 @@ namespace ShopIdle.Plots
     {
         private const float TallHeight = 2.4f;   // north/east: behind the action
         private const float LowHeight = 0.9f;    // south/west: cut away towards the camera
-        private const float Thickness = 0.3f;
+        private const float Thickness = 0.35f;
         private const float DoorWidth = 2f;
 
         private readonly Dictionary<string, GameObject> _walls = new();
-        private Material _wallMat, _trimMat;
+        private static readonly Color WallBody = new(0.88f, 0.9f, 0.91f);
+        private static readonly Color WallStripe = new(0.1f, 0.6f, 0.64f);
+        private static readonly Color WallCap = new(0.99f, 0.99f, 0.97f);
+
+        private Material _wallMat, _trimMat, _capMat, _glassMat;
 
         public void Rebuild(HashSet<Vector2Int> owned, Vector2Int doorPlot, bool animate)
         {
@@ -74,25 +78,47 @@ namespace ShopIdle.Plots
 
         private void Segment(Transform parent, Vector3 center, bool alongX, float length, float height)
         {
-            var p = Core.ColorPalette.Instance;
-            _wallMat ??= Core.ColorPalette.MakeLit(p.wallCoral);
-            _trimMat ??= Core.ColorPalette.MakeLit(p.wallTrim);
+            _wallMat ??= Core.ColorPalette.MakeLit(WallBody);
+            _trimMat ??= Core.ColorPalette.MakeLit(WallStripe);
+            _capMat ??= Core.ColorPalette.MakeLit(WallCap);
 
-            var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            wall.name = "Wall";
-            wall.transform.SetParent(parent, false);
-            wall.transform.position = center + Vector3.up * height * 0.5f;
-            wall.transform.localScale = alongX
-                ? new Vector3(length, height, Thickness) : new Vector3(Thickness, height, length);
-            wall.GetComponent<MeshRenderer>().sharedMaterial = _wallMat;
+            var wall = Block(parent, "Wall", center + Vector3.up * height * 0.5f, alongX, length, height, Thickness, _wallMat);
+            wall.AddComponent<BoxCollider>();
 
-            var trim = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            trim.name = "Trim";
-            Destroy(trim.GetComponent<BoxCollider>());
-            trim.transform.SetParent(wall.transform, false);
-            trim.transform.localPosition = new Vector3(0f, 0.5f, 0f);
-            trim.transform.localScale = new Vector3(alongX ? 1.01f : 1.2f, 0.06f / height, alongX ? 1.2f : 1.01f);
-            trim.GetComponent<MeshRenderer>().sharedMaterial = _trimMat;
+            // Coloured stripe just under a white cap: the wall reads clearly from the iso camera.
+            Block(parent, "Stripe", center + Vector3.up * (height - 0.16f), alongX, length + 0.01f, 0.12f, Thickness + 0.04f, _trimMat);
+            Block(parent, "Cap", center + Vector3.up * (height + 0.03f), alongX, length + 0.02f, 0.06f, Thickness + 0.08f, _capMat);
+
+            if (height >= TallHeight && length > PlotGrid.Size) AddWindows(parent, center, alongX);
+        }
+
+        /// <summary>Two windows on the inside face of a tall wall (camera side).</summary>
+        private void AddWindows(Transform parent, Vector3 center, bool alongX)
+        {
+            _glassMat ??= Core.ColorPalette.MakeLit(new Color(0.72f, 0.88f, 0.98f));
+            Vector3 axis = alongX ? Vector3.right : Vector3.forward;
+            // Inside face points towards the plot centre: -Z for north walls, -X for east walls.
+            Vector3 inward = alongX ? Vector3.back : Vector3.left;
+            foreach (float offset in new[] { -2f, 2f })
+            {
+                Vector3 c = center + axis * offset + Vector3.up * 1.45f + inward * (Thickness * 0.5f + 0.01f);
+                Block(parent, "WindowFrame", c, alongX, 2f, 0.95f, 0.04f, _trimMat);
+                Block(parent, "WindowGlass", c + inward * 0.015f, alongX, 1.8f, 0.78f, 0.03f, _glassMat);
+                Block(parent, "WindowBar", c + inward * 0.03f, alongX, 0.06f, 0.78f, 0.03f, _trimMat);
+            }
+        }
+
+        private static GameObject Block(Transform parent, string name, Vector3 pos, bool alongX,
+            float length, float height, float depth, Material mat)
+        {
+            var g = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            g.name = name;
+            Destroy(g.GetComponent<BoxCollider>());
+            g.transform.SetParent(parent, false);
+            g.transform.position = pos;
+            g.transform.localScale = alongX ? new Vector3(length, height, depth) : new Vector3(depth, height, length);
+            g.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            return g;
         }
 
         private static IEnumerator Sink(GameObject edge)
