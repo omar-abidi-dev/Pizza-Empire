@@ -262,7 +262,7 @@ Assets/
 ### Run it
 1. Clone the repo:
    ```bash
-   git clone https://github.com/omar-abidi-dev/Pizza-Empire.git
+   git clone https://github.com/omar-abidi-dev/pizza-empire-idle-restaurant-game.git
    ```
 2. Open the folder in Unity Hub with **Unity 6000.3.10f1**. The first import builds the
    `Library/` folder, which takes a few minutes.
